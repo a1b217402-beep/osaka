@@ -1,0 +1,93 @@
+html_content = '''
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大阪京都之旅</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>大阪京都之旅</h1>
+        <nav>
+            <ul>
+                <li><a href="#home">首頁</a></li>
+                <li><button class="nav-btn" onclick="openModal('day1')">第一天</button></li>
+                <li><button class="nav-btn" onclick="openModal('day2')">第二天</button></li>
+                <li><button class="nav-btn" onclick="openModal('day3')">第三天</button></li>
+                <li><button class="nav-btn" onclick="openModal('day4')">第四天</button></li>
+                <li><button class="nav-btn" onclick="openModal('day5')">第五天</button></li>
+                <li><button class="nav-btn" onclick="openModal('day6')">第六天</button></li>
+                <li><button class="nav-btn" onclick="openModal('day7')">第七天</button></li>
+                <li><button class="nav-btn" onclick="openModal('day8')">第八天</button></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="home" class="hero">
+            <h2>歡迎來到關西！</h2>
+            <p>一起探索大阪的熱情與京都的古韻。</p>
+            <p>點擊上方選單查看每日詳細行程</p>
+        </section>
+
+        <!-- 彈出視窗結構 -->
+        <div id="itineraryModal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn" onclick="closeModal()">&times;</span>
+                <div id="modalBody"></div>
+            </div>
+        </div>
+
+        <!-- 隱藏的行程資料來源 -->
+        <div id="data-source" style="display:none;">
+            <div id="content-day1">
+                <h2>第一天：8月10日 (週六) - 大阪</h2>
+                <h3>上午：抵達關西機場</h3>
+                <p>搭乘南海電鐵前往市區，入住飯店。</p>
+                <h3>下午：道頓堀、心齋橋</h3>
+                <p>感受大阪熱鬧氛圍，品嚐章魚燒。</p>
+            </div>
+            <div id="content-day2">
+                <h2>第二天：8月11日 (週日) - 環球影城</h2>
+                <p>全日於日本環球影城 (USJ) 盡情遊玩。</p>
+            </div>
+            <div id="content-day3">
+                <h2>第三天：8月12日 (週一) - 大阪歷史</h2>
+                <p>參觀大阪城天守閣、新世界通天閣。</p>
+            </div>
+            <div id="content-day4">
+                <h2>第四天：8月13日 (週二) - 前往京都</h2>
+                <p>金閣寺、龍安寺，晚上漫步祇園。</p>
+            </div>
+            <div id="content-day5">
+                <h2>第五天：8月14日 (週三) - 嵐山之旅</h2>
+                <p>渡月橋、竹林小徑、天龍寺。</p>
+            </div>
+            <div id="content-day6">
+                <h2>第六天：8月15日 (週四) - 京都經典</h2>
+                <p>伏見稻荷大社、清水寺、二年坂。</p>
+            </div>
+            <div id="content-day7">
+                <h2>第七天：8月16日 (週五) - 奈良一日遊</h2>
+                <p>東大寺看大佛，在奈良公園餵小鹿。</p>
+            </div>
+            <div id="content-day8">
+                <h2>第八天：8月17日 (週六) - 返程</h2>
+                <p>京都車站採買伴手禮，搭乘 HARUKA 前往機場。</p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 大阪京都之旅. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
+'''
+with open('index.html', 'w', encoding='utf-8') as f:
+    f.write(html_content)
+print("index.html 已更新彈出視窗結構！")
