@@ -20,21 +20,50 @@
     </header>
 
     <main>
-        <nav>
-            <div class="nav-container">
-                <button class="nav-btn" onclick="openModal('day1')">Day 1</button>
-                <button class="nav-btn" onclick="openModal('day2')">Day 2</button>
-                <button class="nav-btn" onclick="openModal('day3')">Day 3</button>
-                <button class="nav-btn" onclick="openModal('day4')">Day 4</button>
-                <button class="nav-btn" onclick="openModal('day5')">Day 5</button>
-                <button class="nav-btn" onclick="openModal('day6')">Day 6</button>
-                <button class="nav-btn" onclick="openModal('day7')">Day 7</button>
-                <button class="nav-btn" onclick="openModal('day8')">Day 8</button>
+        <nav class="date-nav">
+            <div class="date-selector">
+                <div class="date-item active" onclick="openModal('day1'); setActive(this)">
+                    <span class="day">MON</span><span class="date">10</span><div class="dot"></div>
+                </div>
+                <div class="date-item" onclick="openModal('day2'); setActive(this)">
+                    <span class="day">TUE</span><span class="date">11</span><div class="dot"></div>
+                </div>
+                <div class="date-item" onclick="openModal('day3'); setActive(this)">
+                    <span class="day">WED</span><span class="date">12</span><div class="dot"></div>
+                </div>
+                <div class="date-item" onclick="openModal('day4'); setActive(this)">
+                    <span class="day">THU</span><span class="date">13</span><div class="dot"></div>
+                </div>
+                <div class="date-item" onclick="openModal('day5'); setActive(this)">
+                    <span class="day">FRI</span><span class="date">14</span><div class="dot"></div>
+                </div>
+                <div class="date-item" onclick="openModal('day6'); setActive(this)">
+                    <span class="day">SAT</span><span class="date">15</span><div class="dot"></div>
+                </div>
+                <div class="date-item" onclick="openModal('day7'); setActive(this)">
+                    <span class="day">SUN</span><span class="date">16</span><div class="dot"></div>
+                </div>
+                <div class="date-item" onclick="openModal('day8'); setActive(this)">
+                    <span class="day">MON</span><span class="date">17</span><div class="dot"></div>
+                </div>
             </div>
         </nav>
 
         <section class="weather-widget">
-            <div id="weather-info">⛅ 正在載入大阪即時天氣...</div>
+            <div class="weather-header">
+                <div class="weather-left">
+                    <h2 class="city-name">大阪市</h2>
+                    <span class="weather-subtitle">未來 24 小時預報</span>
+                </div>
+                <div class="weather-right">
+                    <h3 id="current-weather-desc">當地即時天氣資訊</h3>
+                    <span class="weather-provider">Open-Meteo</span>
+                </div>
+            </div>
+            
+            <div class="hourly-forecast" id="hourly-forecast">
+                <p style="font-size: 13px; color: #888;">正在同步大阪氣象資料...</p>
+            </div>
         </section>
 
         <section class="hero">
@@ -57,7 +86,6 @@
                     <span class="day-badge">8/10 SUN</span>
                     <h2>Day 1: 台北 ✈️ 大阪</h2>
                 </div>
-                
                 <div class="itinerary-card">
                     <div class="time-item"><span class="time">19:00</span><span>抵達關西機場 (KIX) - IT212</span></div>
                     <div class="time-item"><span class="time">20:10</span><span>入境與提領行李 (預估)</span></div>
@@ -65,15 +93,10 @@
                     <div class="time-item"><span class="time">21:14</span><span>抵達「南海難波站」</span></div>
                     <div class="time-item"><span class="time">21:30</span><span>入住 艾思利德酒店難波東</span></div>
                 </div>
-
                 <div class="transport-section">
                     <h3>📍 目的地導覽</h3>
-                    <a href="https://www.google.com/maps/place/%E8%89%BE%E6%80%9D%E5%88%A9%E5%BE%B7%E9%85%92%E5%BA%97%E9%9B%A3%E6%B3%A2%E6%9D%B1/@34.6602506,135.4976652,16z/data=!4m11!3m10!1s0x6000e74e00f7c3c7:0x594096f17de5b18b!5m4!1s2026-08-11!2i3!4m1!1i2!8m2!3d34.6602506!4d135.5071924!16s%2Fg%2F11n3ptzt6v?entry=ttu&g_ep=EgoyMDI2MDMyMy4xIKXMDSoASAFQAw%3D%3D" target="_blank" class="glass-btn">
-                        <span class="icon">🚶</span> Google Map 導航
-                    </a>
-                    <a href="mot-go://" class="glass-btn taxi">
-                        <span class="icon">🚕</span> 開啟手機內 GO Taxi
-                    </a>
+                    <a href="https://www.google.com/maps/place/%E8%89%BE%E6%80%9D%E5%88%A9%E5%BE%B7%E9%85%92%E5%BA%97%E9%9B%A3%E6%B3%A2%E6%9D%B1/@34.6602506,135.4976652,16z/data=!4m11!3m10!1s0x6000e74e00f7c3c7:0x594096f17de5b18b!5m4!1s2026-08-11!2i3!4m1!1i2!8m2!3d34.6602506!4d135.5071924!16s%2Fg%2F11n3ptzt6v?entry=ttu&g_ep=EgoyMDI2MDMyMy4xIKXMDSoASAFQAw%3D%3D" target="_blank" class="glass-btn"><span class="icon">🚶</span> Google Map 導航</a>
+                    <a href="mot-go://" class="glass-btn taxi"><span class="icon">🚕</span> 開啟手機內 GO Taxi</a>
                     <p class="address-text">艾思利德酒店難波東</p>
                 </div>
             </div>
