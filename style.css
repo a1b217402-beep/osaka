@@ -1,48 +1,73 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@600;700&family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap');
 
+/* 全域重置 */
 *, *::before, *::after { box-sizing: border-box; }
+
+:root {
+    --ios-blue: #0071e3;
+    --glass-white: rgba(255, 255, 255, 0.35);
+    /* 還原流體漸變色 */
+    --c1: #ff9a9e; 
+    --c2: #fad0c4; 
+    --c3: #a1c4fd;
+}
 
 body { 
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Noto Sans TC", sans-serif;
     margin: 0; padding: 0; color: #1d1d1f; -webkit-font-smoothing: antialiased;
-    background: linear-gradient(217deg, var(--c1), rgba(0,0,0,0) 70.71%),
-                linear-gradient(127deg, var(--c2), rgba(0,0,0,0) 70.71%),
-                linear-gradient(336deg, var(--c3), rgba(0,0,0,0) 70.71%);
-    background-size: 200% 200%; animation: liquidBg 15s ease infinite; 
-    background-attachment: fixed; min-height: 100vh; overflow-x: hidden; width: 100%;
+    /* 修正底色：確保漸變色可視 */
+    background: linear-gradient(217deg, var(--c1), rgba(255,255,255,0) 70.71%),
+                linear-gradient(127deg, var(--c2), rgba(255,255,255,0) 70.71%),
+                linear-gradient(336deg, var(--c3), rgba(255,255,255,0) 70.71%);
+    background-size: 200% 200%;
+    animation: liquidBg 15s ease infinite; 
+    background-attachment: fixed; 
+    min-height: 100vh;
+    overflow-x: hidden;
+    width: 100%;
 }
 
-@keyframes liquidBg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+@keyframes liquidBg { 
+    0% { background-position: 0% 50%; } 
+    50% { background-position: 100% 50%; } 
+    100% { background-position: 0% 50%; } 
+}
 
 header { 
     background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
     padding: 20px 0 10px 0; text-align: center; position: sticky; top: 0; z-index: 100;
 }
 header h1 { margin: 0; font-size: 24px; font-family: 'Noto Serif JP', serif; }
-.subtitle { font-size: 13px; color: #424245; font-weight: 600; }
+.subtitle { font-size: 13px; color: #424245; font-weight: 600; letter-spacing: 1px; }
 
 .serif { font-family: 'Noto Serif JP', serif !important; }
 
-/* 強制所有容器左右對齊與寬度一致 */
-.weather-widget, .hero-card, .modal-content, .nav-container {
+/* 版面一致性：寬度大統一 */
+.nav-container, .weather-widget, .hero-card, .modal-content {
     width: 90% !important; 
     max-width: 400px !important;
-    margin: 0 auto 20px auto !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
 }
 
-.nav-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 20px !important; }
+/* 4x2 導覽列 */
+.nav-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 20px auto; }
 .nav-btn {
     background: rgba(255, 255, 255, 0.85); border: 1px solid rgba(255,255,255,0.5); 
-    padding: 12px 0; border-radius: 15px; font-weight: 600; font-size: 12px;
+    padding: 12px 0; border-radius: 15px; font-weight: 600; font-size: 12px; color: #1d1d1f;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
 }
 
+/* 天氣面板 */
 .weather-widget {
     background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px);
     border-radius: 25px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    margin-bottom: 20px !important;
 }
 .weather-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 10px;}
 .city-name { margin: 0; font-size: 18px; font-family: 'Noto Serif JP', serif; }
 .weather-subtitle { font-size: 12px; color: #86868b; }
+.weather-right h3 { margin: 0; font-size: 18px; font-weight: 700; }
 
 .hourly-forecast { display: flex; overflow-x: auto; gap: 18px; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
 .hourly-forecast::-webkit-scrollbar { display: none; }
@@ -51,16 +76,18 @@ header h1 { margin: 0; font-size: 24px; font-family: 'Noto Serif JP', serif; }
 .hourly-item .h-icon { font-size: 20px; margin-bottom: 6px; }
 .hourly-item .h-temp { font-size: 15px; font-weight: 700; }
 
-.hero { display: flex; justify-content: center; padding: 10px 0 40px 0; }
+/* 英雄方框 */
+.hero { display: flex; justify-content: center; padding: 10px 0 40px 0; width: 100%; }
 .hero-card { 
-    background: var(--glass-white); backdrop-filter: blur(30px);
+    background: var(--glass-white); backdrop-filter: blur(30px) saturate(150%);
     padding: 35px 25px; border-radius: 30px; 
     border: 1px solid rgba(255,255,255,0.4); text-align: center;
     box-shadow: 0 15px 35px rgba(0,0,0,0.08);
 }
 .hero-card h2 { margin: 0 0 10px 0; font-size: 22px; font-family: 'Noto Serif JP', serif; }
-.hero-card p { margin: 0; font-size: 14px; font-weight: 500; }
+.hero-card p { margin: 0; font-size: 14px; font-weight: 500; color: #424245; }
 
+/* 彈出視窗：iOS 吸附彈跳動畫 */
 .modal {
     display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
     background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(5px); opacity: 0; transition: opacity 0.3s;
@@ -68,7 +95,7 @@ header h1 { margin: 0; font-size: 24px; font-family: 'Noto Serif JP', serif; }
 .modal.open { opacity: 1; display: flex !important; justify-content: center; align-items: center; }
 
 .modal-content {
-    background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(40px);
+    background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(40px) saturate(180%);
     padding: 35px 20px 25px 20px; max-height: 80vh; overflow-y: auto; 
     border-radius: 35px; border: 1px solid rgba(255, 255, 255, 0.8);
     box-shadow: 0 30px 60px rgba(0,0,0,0.15);
@@ -78,12 +105,15 @@ header h1 { margin: 0; font-size: 24px; font-family: 'Noto Serif JP', serif; }
     transform: scale(1); opacity: 1; 
     transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s; 
 }
+
 .close-btn { position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer; color: #86868b; z-index: 10; }
 
 .itinerary-card { background: #fff; border-radius: 18px; padding: 18px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
-.time-item { display: flex; margin-bottom: 12px; font-size: 15px; }
+.time-item { display: flex; margin-bottom: 12px; font-size: 14px; font-weight: 500; }
 .time-item .time { width: 55px; font-weight: 700; color: var(--ios-blue); }
 .time-item.highlight { background: rgba(0, 113, 227, 0.06); padding: 10px; border-radius: 12px; }
-.glass-btn { display: flex; justify-content: center; background: #fff; padding: 14px; border-radius: 18px; text-decoration: none; color: #1d1d1f; font-weight: 600; margin: 10px 0; border: 1px solid rgba(0,0,0,0.05); }
+
+.glass-btn { display: flex; justify-content: center; align-items: center; background: #fff; padding: 14px; border-radius: 18px; text-decoration: none; color: #1d1d1f; font-weight: 600; margin: 10px 0; border: 1px solid rgba(0,0,0,0.05); font-size: 15px; }
+.glass-btn.taxi { background: #fffbef; border-color: #fce48b; color: #b08500; }
 
 footer { text-align: center; padding: 30px; color: #424245; font-size: 11px; font-weight: 500; }
