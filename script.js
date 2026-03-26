@@ -26,6 +26,17 @@ function openModal(dayId, event) {
     }
 }
 
+// 修正點：新增點擊動態看板進入當日行程的功能
+function openCurrentDayPreview(event) {
+    const now = new Date();
+    // 判斷今天是第幾天 (8/10為Day1，以此類推至8/17為Day8)
+    let dayNum = (now.getMonth() + 1 === 8 && now.getDate() >= 10 && now.getDate() <= 17) 
+                    ? now.getDate() - 9 : 1; 
+    
+    // 將點擊事件傳入，這樣視窗就會從預覽方塊中心帥氣地彈出
+    openModal('day' + dayNum, event);
+}
+
 function closeModal() {
     const modal = document.getElementById('itineraryModal');
     if (modal) {
@@ -92,7 +103,6 @@ function updateItineraryPreview() {
     const items = Array.from(daySection.querySelectorAll('.time-item'));
     const itinerary = items.map(el => {
         const [h, m] = el.getAttribute('data-time').split(':').map(Number);
-        // 修正點：優先抓取主標題 (.item-title)，避免把交通資訊也顯示在看板上
         const titleEl = el.querySelector('.item-title');
         const itemTitle = titleEl ? titleEl.innerText : el.querySelector('span:last-child').innerText;
         
