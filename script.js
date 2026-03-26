@@ -1,5 +1,6 @@
 let currentActiveButton = null;
 
+// 精準吸附特效原點計算
 function setModalOrigin() {
     if (!currentActiveButton) return;
     const modalContent = document.querySelector('.modal-content');
@@ -51,17 +52,21 @@ function getWeatherEmoji(code) {
     return table[code] || "🌤️";
 }
 
+// 抓取天氣：確保時間軸絕對與當地對齊
 async function fetchWeather(lat, lon, cityName) {
     const hourlyContainer = document.getElementById('hourly-forecast');
     const titleDesc = document.getElementById('current-weather-desc');
     const locationName = document.getElementById('location-name');
     try {
         locationName.innerHTML = `📍 ${cityName}`;
+        // timezone=auto 確保 API 根據座標返回當地時區時間
         const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,weathercode&timezone=auto&forecast_days=2`);
         const data = await res.json();
         
+        // 取得 API 指定的「當前時間」字串進行對齊
         const currentHourStr = data.current_weather.time; 
         const hourlyTimes = data.hourly.time;
+        
         titleDesc.innerHTML = `${getWeatherEmoji(data.current_weather.weathercode)} ${Math.round(data.current_weather.temperature)}°C`;
 
         let startIndex = hourlyTimes.findIndex(t => t === currentHourStr);
@@ -79,7 +84,7 @@ async function fetchWeather(lat, lon, cityName) {
                 </div>`;
         }
         hourlyContainer.innerHTML = html;
-    } catch (e) { titleDesc.innerHTML = "同步失敗"; }
+    } catch (e) { titleDesc.innerHTML = "同步中"; }
 }
 
 function initWeather() {
@@ -94,4 +99,5 @@ function initWeather() {
         }, () => fetchWeather(34.69, 135.50, "大阪市 (預設)"), { timeout: 8000 });
     } else { fetchWeather(34.69, 135.50, "大阪市 (預設)"); }
 }
+
 document.addEventListener('DOMContentLoaded', initWeather);
