@@ -1,8 +1,96 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+
+:root {
+    --ios-blue: #0071e3;
+    --glass-white: rgba(255, 255, 255, 0.35);
+    --c1: #ff9a9e; --c2: #fad0c4; --c3: #a1c4fd;
+}
+
+body { 
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Noto Sans TC", sans-serif;
+    margin: 0; color: #1d1d1f;
+    -webkit-font-smoothing: antialiased;
+    background: linear-gradient(217deg, var(--c1), rgba(255,0,0,0) 70.71%),
+                linear-gradient(127deg, var(--c2), rgba(0,255,0,0) 70.71%),
+                linear-gradient(336deg, var(--c3), rgba(0,0,255,0) 70.71%);
+    background-size: 200% 200%;
+    animation: liquidBg 15s ease infinite; 
+    background-attachment: fixed; 
+    min-height: 100vh;
+}
+
+@keyframes liquidBg {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+header { 
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+    padding: 15px 0; /* 移除左右內距讓網格有更多空間 */
+    text-align: center; position: sticky; top: 0; z-index: 100;
+    border-bottom: 1px solid rgba(255,255,255,0.3);
+}
+
+header h1 { margin: 0 0 10px 0; font-size: 24px; }
+
 /* =========================================
-   彈出視窗主體：提高白色不透明度，解決灰暗感
+   導覽列：強制 4x2 網格排版
    ========================================= */
+.nav-container { 
+    display: grid; 
+    grid-template-columns: repeat(4, 1fr); /* 強制均分為四等分 */
+    gap: 10px; /* 按鈕間的距離 */
+    width: 92%; /* 讓網格佔滿大部分寬度 */
+    max-width: 500px; /* 電腦版最大寬度限制 */
+    margin: 0 auto; /* 絕對置中 */
+    box-sizing: border-box;
+}
+
+.nav-btn {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255,255,255,0.6); 
+    padding: 12px 0; /* 讓按鈕高度一致且好按 */
+    border-radius: 16px; cursor: pointer; transition: 0.3s;
+    font-weight: 600; font-size: 13px; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+}
+.nav-btn:hover { background: var(--ios-blue); color: white; transform: translateY(-2px); border-color: var(--ios-blue); }
+
+/* 首頁方框 */
+.hero { 
+    display: flex; justify-content: center; align-items: center;
+    padding: 60px 20px; text-align: center; 
+}
+.hero-card { 
+    background: var(--glass-white); 
+    backdrop-filter: blur(30px) saturate(150%);
+    -webkit-backdrop-filter: blur(30px) saturate(150%);
+    width: 100%; max-width: 450px; 
+    padding: 40px 30px; 
+    border-radius: 30px; 
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
+    box-sizing: border-box;
+}
+.hero-card h2 { margin-top: 0; color: #1d1d1f; }
+.hero-card p { color: #424245; margin-bottom: 0; line-height: 1.6; font-weight: 500; }
+
+/* 彈出視窗 */
+.modal {
+    display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.3); /* 稍微加深一點遮罩凸顯白色視窗 */
+    backdrop-filter: blur(5px); 
+    -webkit-backdrop-filter: blur(5px);
+    opacity: 0; transition: opacity 0.4s ease;
+}
+
+.modal.open { display: flex !important; justify-content: center; align-items: center; opacity: 1; }
+
 .modal-content {
-    background: rgba(255, 255, 255, 0.92); /* 從原本的 0.35 提高到 0.92，大幅增加閱讀性 */
+    background: rgba(255, 255, 255, 0.92); /* 明亮的視窗底色 */
     backdrop-filter: blur(40px) saturate(180%);
     -webkit-backdrop-filter: blur(40px) saturate(180%);
     padding: 30px; width: 88%; max-width: 450px;
@@ -16,21 +104,19 @@
 .close-btn { position: absolute; right: 20px; top: 15px; font-size: 26px; cursor: pointer; color: rgba(0,0,0,0.3); transition: 0.2s;}
 .close-btn:hover { color: #000; }
 
-/* 行程卡片：改為純白底色，讓文字對比度最高 */
+/* 行程卡片：純白底色高對比 */
 .itinerary-card { 
     background: #ffffff; 
     border-radius: 20px; 
     padding: 18px; 
     margin-bottom: 20px; 
-    box-shadow: 0 5px 15px rgba(0,0,0,0.04); /* 加入微陰影拉出立體感 */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.04); 
 }
-
-/* 加深字體顏色與微調粗細 */
 .time-item { display: flex; margin-bottom: 12px; font-size: 15px; color: #1d1d1f; font-weight: 500;} 
 .time-item .time { width: 55px; font-weight: 700; color: var(--ios-blue); }
 .time-item.highlight { background: rgba(0, 113, 227, 0.08); padding: 10px; border-radius: 12px; }
 
-/* 導覽按鈕：提高亮度，改為純白底色 */
+/* 導覽按鈕：明亮白色 */
 .glass-btn {
     display: flex; align-items: center; justify-content: center; gap: 10px;
     background: #ffffff; 
@@ -40,13 +126,7 @@
     box-shadow: 0 4px 10px rgba(0,0,0,0.03);
 }
 .glass-btn:hover { background: #f5f5f7; transform: scale(1.02); }
-
-/* 計程車按鈕：給予專屬的明亮暖黃配色 */
-.glass-btn.taxi { 
-    background: #fffbef; 
-    border-color: #fce48b; 
-    color: #b08500; 
-}
+.glass-btn.taxi { background: #fffbef; border-color: #fce48b; color: #b08500; }
 
 .address-text { font-size: 14px; color: #424245; text-align: center; margin-top: 15px; font-weight: 600; }
 
