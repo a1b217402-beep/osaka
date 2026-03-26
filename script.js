@@ -126,6 +126,30 @@ function init() {
 
     updateItineraryPreview();
     setInterval(updateItineraryPreview, 30000);
+
+    // --- 🚀 新增：記帳本的觸控滑動切換邏輯 ---
+    const toggleArea = document.querySelector('.payer-toggle');
+    let touchStartX = 0;
+    
+    if (toggleArea) {
+        toggleArea.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+        
+        toggleArea.addEventListener('touchend', e => {
+            let touchEndX = e.changedTouches[0].screenX;
+            let diff = touchEndX - touchStartX;
+            
+            // 如果手指滑動距離超過 30px 就觸發切換
+            if (diff > 30) {
+                // 往右滑 -> ㄐㄐ付款
+                document.getElementById('payer-jj').checked = true;
+            } else if (diff < -30) {
+                // 往左滑 -> Timmy付款
+                document.getElementById('payer-timmy').checked = true;
+            }
+        }, { passive: true });
+    }
 }
 
 document.addEventListener('DOMContentLoaded', init);
