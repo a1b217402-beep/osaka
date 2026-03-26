@@ -25,9 +25,7 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
-h1, h2, h3, h4, h5, h6, .serif {
-    font-family: var(--title-font) !important;
-}
+h1, h2, h3, h4, h5, h6, .serif { font-family: var(--title-font) !important; }
 
 header { 
     background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
@@ -70,11 +68,15 @@ header h1 { margin: 0; font-size: 24px; }
 .hourly-item .h-temp { font-size: 15px; font-weight: 700; }
 
 .hero { display: flex; justify-content: center; padding: 10px 0 40px 0; width: 100%; }
+
+/* 修正點：加上 cursor: pointer 暗示可以點擊 */
 .preview-card-content {
     background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(30px);
     padding: 22px; border-radius: 28px; border: 1px solid rgba(255,255,255,0.5);
     box-shadow: 0 15px 35px rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer;
 }
+
 .preview-middle { flex: 1; display: flex; flex-direction: column; padding-right: 15px; border-right: 1px solid rgba(0,0,0,0.05); }
 .current-time { font-size: 32px; font-weight: 700; line-height: 1.1; margin-bottom: 4px; }
 .activity-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
@@ -107,21 +109,16 @@ header h1 { margin: 0; font-size: 24px; }
 .close-btn:hover { transform: scale(1.05); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2); }
 
 .itinerary-card { background: #fff; border-radius: 18px; padding: 18px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
-
-/* --- 修正點：行程條目排版更新，支援多行文字 --- */
 .time-item { display: flex; align-items: flex-start; margin-bottom: 15px; font-size: 14px; }
 .time-item .time { width: 55px; font-weight: 700; color: var(--ios-blue); padding-top: 1px; }
 .time-item.highlight { background: rgba(0, 113, 227, 0.06); padding: 12px; border-radius: 12px; margin-left: -12px; margin-right: -12px; }
 
-/* 交通細節排版 */
 .item-content { display: flex; flex-direction: column; flex: 1; }
 .item-title { font-weight: 600; color: #1d1d1f; }
 .transit-detail { font-size: 11px; color: #86868b; margin-top: 5px; font-weight: 500; display: flex; align-items: center; }
 
 .glass-btn { display: flex; justify-content: center; align-items: center; background: #fff; padding: 14px; border-radius: 18px; text-decoration: none; color: #1d1d1f; font-weight: 600; margin: 10px 0; border: 1px solid rgba(0,0,0,0.05); }
 .glass-btn.taxi { background: #fffbef !important; border-color: #fce48b !important; color: #b08500 !important; }
-
-/* 新增：累了想回家 按鈕專屬樣式 */
 .glass-btn.home-btn { background: #f2f2f7 !important; border-color: #e5e5ea !important; color: #1d1d1f !important; margin-top: 20px; }
 
 footer { text-align: center; padding: 30px 0 max(30px, env(safe-area-inset-bottom)) 0; color: #424245; font-size: 11px; font-weight: 500; }
