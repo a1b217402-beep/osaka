@@ -138,3 +138,142 @@ function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+/* =========================================
+   💰 記帳本專用邏輯 (Timmy & ㄐㄐ)
+========================================= */
+
+// 從瀏覽器本地讀取記帳資料，若無則為空陣列
+let expenses = JSON.parse(localStorage.getItem('travelExpenses')) || [];
+
+function openExpenseModal(event) {
+    const modal = document.getElementById('expenseModal');
+    modal.style.display = 'flex';
+    
+    // 動畫效果
+    setTimeout(() => { modal.classList.add('open'); }, 10);
+    document.body.style.overflow = 'hidden';
+    
+    // 每次打開時更新結算畫面
+    renderExpenses();
+}
+
+function closeExpenseModal() {
+    const modal = document.getElementById('expenseModal');
+    modal.classList.remove('open');
+    setTimeout(() => { modal.style.display = 'none'; }, 300);
+    document.body.style.overflow = '';
+}
+
+// 修改原有的 window.onclick，讓點擊背景也能關閉記帳本
+window.onclick = function(event) {
+    const itModal = document.getElementById('itineraryModal');
+    const expModal = document.getElementById('expenseModal');
+    if (event.target === itModal) closeModal();
+    if (event.target === expModal) closeExpenseModal();
+};
+
+function addExpense() {
+    const payer = document.querySelector('input[name="payer"]:checked').value;
+    const amountInput = document.getElementById('expense-amount').value;
+    const descInput = document.getElementById('expense-desc').value;
+
+    const amount = parseInt(amountInput);
+    
+    if (!amount || amount <= 0 || !descInput.trim()) {
+        alert("請輸入有效的金額與項目！");
+        return;
+    }
+
+    // 建立新一筆帳目
+    const newExpense = {
+        id: Date.now(),
+        payer: payer,
+        amount: amount,
+        desc: descInput.trim(),
+        date: new Date().toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+    };
+
+    expenses.push(newExpense);
+    localStorage.setItem('travelExpenses', JSON.stringify(expenses)); // 存檔
+    
+    // 清空輸入框
+    document.getElementById('expense-amount').value = '';
+    document.getElementById('expense-desc').value = '';
+    
+    renderExpenses();
+}
+
+function deleteExpense(id) {
+    if(confirm("確定要刪除這筆紀錄嗎？")) {
+        expenses = expenses.filter(exp => exp.id !== id);
+        localStorage.setItem('travelExpenses', JSON.stringify(expenses));
+        renderExpenses();
+    }
+}
+
+function renderExpenses() {
+    const listContainer = document.getElementById('expense-list');
+    listContainer.innerHTML = '';
+    
+    let timmyTotal = 0;
+    let jjTotal = 0;
+
+    // 將陣列反轉，讓最新的花費顯示在最上面
+    const reversedExpenses = [...expenses].reverse();
+
+    reversedExpenses.forEach(exp => {
+        if (exp.payer === 'Timmy') {
+            timmyTotal += exp.amount;
+        } else {
+            jjTotal += exp.amount;
+        }
+
+        const iconStr = exp.payer === 'Timmy' ? '👦🏻' : '👧🏻';
+        const colorClass = exp.payer === 'Timmy' ? 'color-timmy' : 'color-jj';
+
+        listContainer.innerHTML += `
+            <div class="exp-item">
+                <div class="exp-item-left">
+                    <div class="exp-avatar ${colorClass}">${iconStr}</div>
+                    <div class="exp-info">
+                        <span class="exp-desc">${exp.desc}</span>
+                        <span class="exp-date">${exp.date}</span>
+                    </div>
+                </div>
+                <div class="exp-item-right">
+                    <span class="exp-price">¥${exp.amount.toLocaleString()}</span>
+                    <div class="exp-delete" onclick="deleteExpense(${exp.id})">🗑️</div>
+                </div>
+            </div>
+        `;
+    });
+
+    if(reversedExpenses.length === 0) {
+        listContainer.innerHTML = '<p style="text-align:center; color:#86868b; font-size:12px; margin-top:20px;">尚無紀錄，開始記帳吧！</p>';
+    }
+
+    // 更新總覽面板
+    const total = timmyTotal + jjTotal;
+    document.getElementById('total-amount').innerText = total.toLocaleString();
+    document.getElementById('timmy-paid').innerText = timmyTotal.toLocaleString();
+    document.getElementById('jj-paid').innerText = jjTotal.toLocaleString();
+
+    // 核心結算邏輯 (AA制計算)
+    const settlementText = document.getElementById('settlement-text');
+    const diff = timmyTotal - jjTotal;
+    
+    // 假設 AA制，多付的人應該拿回一半的差額
+    const halfDiff = Math.abs(diff) / 2;
+
+    if (diff > 0) {
+        settlementText.innerHTML = `⚠️ <b>ㄐㄐ</b> 需給 Timmy： <b>¥${halfDiff.toLocaleString()}</b>`;
+        settlementText.className = "settlement owe-timmy";
+    } else if (diff < 0) {
+        settlementText.innerHTML = `⚠️ <b>Timmy</b> 需給 ㄐㄐ： <b>¥${halfDiff.toLocaleString()}</b>`;
+        settlementText.className = "settlement owe-jj";
+    } else {
+        settlementText.innerHTML = `✅ 目前帳目完美平衡`;
+        settlementText.className = "settlement balanced";
+    }
+}
