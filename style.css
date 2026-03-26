@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
 
 :root {
     --ios-blue: #0071e3;
@@ -28,30 +28,43 @@ body {
 header { 
     background: rgba(255, 255, 255, 0.5);
     backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-    padding: 15px 0; /* 移除左右內距讓網格有更多空間 */
+    padding: 15px 0; 
     text-align: center; position: sticky; top: 0; z-index: 100;
     border-bottom: 1px solid rgba(255,255,255,0.3);
 }
 
-header h1 { margin: 0 0 10px 0; font-size: 24px; }
+/* 標題設定：優先使用花園明朝體，若無則降級為 Google 提供的 Noto Serif JP */
+header h1 { 
+    margin: 0; 
+    font-size: 26px; 
+    font-family: 'HanaMin', 'Hanazono Mincho', 'Noto Serif JP', serif; 
+    color: #1d1d1f;
+}
 
-/* =========================================
-   導覽列：強制 4x2 網格排版
-   ========================================= */
+/* 副標題設定 */
+.subtitle {
+    font-size: 13px;
+    color: #424245;
+    margin: 5px 0 15px 0;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+/* 導覽列：強制 4x2 網格排版 */
 .nav-container { 
     display: grid; 
-    grid-template-columns: repeat(4, 1fr); /* 強制均分為四等分 */
-    gap: 10px; /* 按鈕間的距離 */
-    width: 92%; /* 讓網格佔滿大部分寬度 */
-    max-width: 500px; /* 電腦版最大寬度限制 */
-    margin: 0 auto; /* 絕對置中 */
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 10px; 
+    width: 92%; 
+    max-width: 500px; 
+    margin: 0 auto; 
     box-sizing: border-box;
 }
 
 .nav-btn {
     width: 100%;
     background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255,255,255,0.6); 
-    padding: 12px 0; /* 讓按鈕高度一致且好按 */
+    padding: 12px 0; 
     border-radius: 16px; cursor: pointer; transition: 0.3s;
     font-weight: 600; font-size: 13px; 
     box-shadow: 0 4px 10px rgba(0,0,0,0.04);
@@ -81,7 +94,7 @@ header h1 { margin: 0 0 10px 0; font-size: 24px; }
 .modal {
     display: none; position: fixed; z-index: 1000; left: 0; top: 0;
     width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.3); /* 稍微加深一點遮罩凸顯白色視窗 */
+    background: rgba(0, 0, 0, 0.3); 
     backdrop-filter: blur(5px); 
     -webkit-backdrop-filter: blur(5px);
     opacity: 0; transition: opacity 0.4s ease;
@@ -90,7 +103,7 @@ header h1 { margin: 0 0 10px 0; font-size: 24px; }
 .modal.open { display: flex !important; justify-content: center; align-items: center; opacity: 1; }
 
 .modal-content {
-    background: rgba(255, 255, 255, 0.92); /* 明亮的視窗底色 */
+    background: rgba(255, 255, 255, 0.92); 
     backdrop-filter: blur(40px) saturate(180%);
     -webkit-backdrop-filter: blur(40px) saturate(180%);
     padding: 30px; width: 88%; max-width: 450px;
@@ -104,7 +117,7 @@ header h1 { margin: 0 0 10px 0; font-size: 24px; }
 .close-btn { position: absolute; right: 20px; top: 15px; font-size: 26px; cursor: pointer; color: rgba(0,0,0,0.3); transition: 0.2s;}
 .close-btn:hover { color: #000; }
 
-/* 行程卡片：純白底色高對比 */
+/* 行程卡片 */
 .itinerary-card { 
     background: #ffffff; 
     border-radius: 20px; 
@@ -116,7 +129,7 @@ header h1 { margin: 0 0 10px 0; font-size: 24px; }
 .time-item .time { width: 55px; font-weight: 700; color: var(--ios-blue); }
 .time-item.highlight { background: rgba(0, 113, 227, 0.08); padding: 10px; border-radius: 12px; }
 
-/* 導覽按鈕：明亮白色 */
+/* 導覽按鈕 */
 .glass-btn {
     display: flex; align-items: center; justify-content: center; gap: 10px;
     background: #ffffff; 
