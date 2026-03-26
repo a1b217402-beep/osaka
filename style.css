@@ -1,123 +1,35 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@600;700&family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap');
-
-:root {
-    --ios-blue: #0071e3;
-    --glass-white: rgba(255, 255, 255, 0.35);
-    --c1: #ff9a9e; --c2: #fad0c4; --c3: #a1c4fd;
-}
-
-body { 
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Noto Sans TC", sans-serif;
-    margin: 0; color: #1d1d1f; -webkit-font-smoothing: antialiased;
-    background: linear-gradient(217deg, var(--c1), rgba(255,0,0,0) 70.71%),
-                linear-gradient(127deg, var(--c2), rgba(0,255,0,0) 70.71%),
-                linear-gradient(336deg, var(--c3), rgba(0,0,255,0) 70.71%);
-    background-size: 200% 200%;
-    animation: liquidBg 15s ease infinite; 
-    background-attachment: fixed; min-height: 100vh;
-}
-
-@keyframes liquidBg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-
-header { 
-    background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-    padding: 20px 0 10px 0; text-align: center; position: sticky; top: 0; z-index: 100;
-}
-
-header h1 { margin: 0; font-size: 24px; font-family: 'HanaMin', 'Hanazono Mincho', 'Noto Serif JP', serif; color: #1d1d1f; }
-.subtitle { font-size: 13px; color: #6e6e73; margin: 5px 0 0 0; font-weight: 600; letter-spacing: 1px; }
-
-main { padding-top: 20px; }
-
-/* 導覽列：4x2 網格排版 */
-.nav-container { 
-    display: grid; 
-    grid-template-columns: repeat(4, 1fr); 
-    gap: 10px; 
-    width: 92%; max-width: 500px; 
-    margin: 0 auto 20px auto; box-sizing: border-box;
-}
-
-.nav-btn {
-    width: 100%;
-    background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255,255,255,0.6); 
-    padding: 12px 0; border-radius: 16px; cursor: pointer; transition: 0.3s;
-    font-weight: 600; font-size: 13px; box-shadow: 0 4px 10px rgba(0,0,0,0.04); color: #1d1d1f;
-}
-.nav-btn:hover { background: var(--ios-blue); color: white; transform: translateY(-2px); border-color: var(--ios-blue); }
-
-/* 24小時天氣面板 */
-.weather-widget {
-    background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-    border-radius: 20px; margin: 0 auto 20px auto; padding: 20px;
-    width: 92%; max-width: 450px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05); box-sizing: border-box;
-}
-
-.weather-header {
-    display: flex; justify-content: space-between; align-items: flex-end;
-    border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 15px; margin-bottom: 15px;
-}
-.weather-left { text-align: left; }
-.weather-left .city-name { margin: 0; font-size: 22px; font-family: 'HanaMin', 'Noto Serif JP', serif; color: #1d1d1f; }
-.weather-left .weather-subtitle { font-size: 12px; color: #86868b; font-weight: 500; }
-.weather-right { text-align: right; }
-.weather-right h3 { margin: 0; font-size: 15px; font-family: 'HanaMin', 'Noto Serif JP', serif; color: #1d1d1f; }
-
-.hourly-forecast { display: flex; overflow-x: auto; gap: 20px; padding-bottom: 5px; }
-.hourly-forecast::-webkit-scrollbar { display: none; }
-
-.hourly-item { display: flex; flex-direction: column; align-items: center; min-width: 40px; }
-.hourly-item .h-time { font-size: 13px; color: #6e6e73; font-weight: 500; margin-bottom: 8px; }
-.hourly-item .h-icon { font-size: 22px; margin-bottom: 8px; }
-.hourly-item .h-temp { font-size: 15px; font-weight: 600; color: #1d1d1f; }
-
-/* 首頁方框 */
-.hero { display: flex; justify-content: center; align-items: center; padding: 10px 20px 60px 20px; text-align: center; }
-.hero-card { 
-    background: var(--glass-white); backdrop-filter: blur(30px) saturate(150%); -webkit-backdrop-filter: blur(30px) saturate(150%);
-    width: 100%; max-width: 450px; padding: 40px 30px; border-radius: 30px; 
-    border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 15px 35px rgba(0,0,0,0.1); box-sizing: border-box;
-}
-.hero-card h2 { margin-top: 0; color: #1d1d1f; }
-.hero-card p { color: #424245; margin-bottom: 0; line-height: 1.6; font-weight: 500; }
-
 /* =========================================
-   更新：支援吸附彈出動畫的 Modal
+   更新：支援吸附縮放與彈性特效的 Modal
    ========================================= */
 .modal {
     display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
     background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
-    opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
 }
-.modal.open { opacity: 1; pointer-events: auto; display: flex !important; justify-content: center; align-items: center; }
+.modal.open { 
+    opacity: 1; pointer-events: auto; 
+    display: flex !important; justify-content: center; align-items: center; 
+}
 
 .modal-content {
     background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%);
     padding: 30px; width: 88%; max-width: 450px; border-radius: 35px; border: 1px solid rgba(255, 255, 255, 0.8);
     box-shadow: 0 30px 60px rgba(0,0,0,0.15); 
     
-    /* 動畫關鍵：初始狀態縮小為 0.1，關閉時會縮回 */
-    transform: scale(0.1); opacity: 0;
-    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease;
+    /* 動畫核心設定 */
+    transform: scale(0.05); /* 起始超級小，準備從按鈕中心爆出來 */
+    opacity: 0;
+    /* 關閉時的動畫：快速且精準吸附回去 */
+    transition: transform 0.35s cubic-bezier(0.3, 0, 0, 1), opacity 0.25s ease;
     position: relative;
 }
-.modal.open .modal-content { transform: scale(1); opacity: 1; }
+
+.modal.open .modal-content { 
+    transform: scale(1); 
+    opacity: 1; 
+    /* 打開時的動畫：帶有彈性的 Q 彈放大效果 */
+    transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+}
 
 .close-btn { position: absolute; right: 20px; top: 15px; font-size: 26px; cursor: pointer; color: rgba(0,0,0,0.3); transition: 0.2s;}
 .close-btn:hover { color: #000; }
-
-.itinerary-card { background: #ffffff; border-radius: 20px; padding: 18px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.04); }
-.time-item { display: flex; margin-bottom: 12px; font-size: 15px; color: #1d1d1f; font-weight: 500;} 
-.time-item .time { width: 55px; font-weight: 700; color: var(--ios-blue); }
-.time-item.highlight { background: rgba(0, 113, 227, 0.08); padding: 10px; border-radius: 12px; }
-
-.glass-btn {
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-    background: #ffffff; border: 1px solid rgba(0,0,0,0.05); padding: 14px; margin: 8px 0; border-radius: 18px;
-    text-decoration: none; color: #1d1d1f; font-weight: 600; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-}
-.glass-btn:hover { background: #f5f5f7; transform: scale(1.02); }
-.glass-btn.taxi { background: #fffbef; border-color: #fce48b; color: #b08500; }
-.address-text { font-size: 14px; color: #424245; text-align: center; margin-top: 15px; font-weight: 600; }
-footer { text-align: center; padding: 30px; color: #424245; font-weight: 500;}
