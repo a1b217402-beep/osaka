@@ -25,15 +25,15 @@ body {
     100% { background-position: 0% 50%; }
 }
 
+/* Header 變成純粹的標題區塊 */
 header { 
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.4);
     backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-    padding: 15px 0; 
+    padding: 20px 0 10px 0; 
     text-align: center; position: sticky; top: 0; z-index: 100;
     border-bottom: 1px solid rgba(255,255,255,0.3);
 }
 
-/* 標題設定：優先使用花園明朝體，若無則降級為 Google 提供的 Noto Serif JP */
 header h1 { 
     margin: 0; 
     font-size: 26px; 
@@ -41,51 +41,64 @@ header h1 {
     color: #1d1d1f;
 }
 
-/* 副標題設定 */
 .subtitle {
-    font-size: 13px;
-    color: #424245;
-    margin: 5px 0 15px 0;
-    font-weight: 600;
-    letter-spacing: 1px;
+    font-size: 13px; color: #424245; margin: 5px 0 0 0;
+    font-weight: 600; letter-spacing: 1px;
 }
 
-/* 導覽列：強制 4x2 網格排版 */
+/* 主內容區增加上方內距 */
+main {
+    padding-top: 25px;
+}
+
+/* 導覽列 */
 .nav-container { 
     display: grid; 
     grid-template-columns: repeat(4, 1fr); 
     gap: 10px; 
-    width: 92%; 
-    max-width: 500px; 
-    margin: 0 auto; 
-    box-sizing: border-box;
+    width: 92%; max-width: 500px; 
+    margin: 0 auto; box-sizing: border-box;
 }
 
 .nav-btn {
     width: 100%;
     background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255,255,255,0.6); 
-    padding: 12px 0; 
-    border-radius: 16px; cursor: pointer; transition: 0.3s;
-    font-weight: 600; font-size: 13px; 
-    box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+    padding: 12px 0; border-radius: 16px; cursor: pointer; transition: 0.3s;
+    font-weight: 600; font-size: 13px; box-shadow: 0 4px 10px rgba(0,0,0,0.04);
 }
 .nav-btn:hover { background: var(--ios-blue); color: white; transform: translateY(-2px); border-color: var(--ios-blue); }
 
-/* 首頁方框 */
+/* 新增：天氣小工具卡片 */
+.weather-widget {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    width: 92%; max-width: 450px;
+    margin: 20px auto;
+    padding: 12px 20px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    text-align: center;
+    font-weight: 600;
+    color: #1d1d1f;
+    box-sizing: border-box;
+    display: flex; justify-content: center; align-items: center;
+}
+
+/* 首頁方框 (調整上方間距) */
 .hero { 
     display: flex; justify-content: center; align-items: center;
-    padding: 60px 20px; text-align: center; 
+    padding: 15px 20px 60px 20px; text-align: center; 
 }
 .hero-card { 
     background: var(--glass-white); 
     backdrop-filter: blur(30px) saturate(150%);
     -webkit-backdrop-filter: blur(30px) saturate(150%);
     width: 100%; max-width: 450px; 
-    padding: 40px 30px; 
-    border-radius: 30px; 
+    padding: 40px 30px; border-radius: 30px; 
     border: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
-    box-sizing: border-box;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1); box-sizing: border-box;
 }
 .hero-card h2 { margin-top: 0; color: #1d1d1f; }
 .hero-card p { color: #424245; margin-bottom: 0; line-height: 1.6; font-weight: 500; }
@@ -95,8 +108,7 @@ header h1 {
     display: none; position: fixed; z-index: 1000; left: 0; top: 0;
     width: 100%; height: 100%;
     background: rgba(0, 0, 0, 0.3); 
-    backdrop-filter: blur(5px); 
-    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
     opacity: 0; transition: opacity 0.4s ease;
 }
 
@@ -119,11 +131,8 @@ header h1 {
 
 /* 行程卡片 */
 .itinerary-card { 
-    background: #ffffff; 
-    border-radius: 20px; 
-    padding: 18px; 
-    margin-bottom: 20px; 
-    box-shadow: 0 5px 15px rgba(0,0,0,0.04); 
+    background: #ffffff; border-radius: 20px; padding: 18px; 
+    margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.04); 
 }
 .time-item { display: flex; margin-bottom: 12px; font-size: 15px; color: #1d1d1f; font-weight: 500;} 
 .time-item .time { width: 55px; font-weight: 700; color: var(--ios-blue); }
@@ -132,8 +141,7 @@ header h1 {
 /* 導覽按鈕 */
 .glass-btn {
     display: flex; align-items: center; justify-content: center; gap: 10px;
-    background: #ffffff; 
-    border: 1px solid rgba(0,0,0,0.05);
+    background: #ffffff; border: 1px solid rgba(0,0,0,0.05);
     padding: 14px; margin: 8px 0; border-radius: 18px;
     text-decoration: none; color: #1d1d1f; font-weight: 600; transition: 0.2s;
     box-shadow: 0 4px 10px rgba(0,0,0,0.03);
