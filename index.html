@@ -65,6 +65,19 @@
             </div>
         </section>
 
+        <section class="expense-trigger-section">
+            <div class="expense-trigger-card" onclick="openExpenseModal(event)">
+                <div class="exp-trig-left">
+                    <span class="exp-trig-icon">💰</span>
+                    <div class="exp-trig-text">
+                        <span class="exp-trig-title">旅行記帳本</span>
+                        <span class="exp-trig-sub">Timmy & ㄐㄐ</span>
+                    </div>
+                </div>
+                <div class="exp-trig-right">打開 →</div>
+            </div>
+        </section>
+
         <div id="itineraryModal" class="modal" style="display: none;">
             <div class="modal-content">
                 <div class="close-btn" onclick="closeModal()">×</div>
@@ -72,243 +85,45 @@
             </div>
         </div>
 
-        <div id="data-source" style="display:none;">
-            
-            <div id="content-day1">
-                <div class="ios-modal-header"><h2>Day 1: 台北 ✈️ 大阪</h2></div>
-                <div class="itinerary-card">
-                    <div class="time-item" data-time="19:00">
-                        <span class="time">19:00</span>
-                        <div class="item-content">
-                            <span class="item-title">抵達關西機場 (KIX) - IT212</span>
-                        </div>
+        <div id="expenseModal" class="modal" style="display: none;">
+            <div class="modal-content expense-modal-content">
+                <div class="close-btn" onclick="closeExpenseModal()">×</div>
+                <div class="ios-modal-header"><h2>雙人記帳本</h2></div>
+                
+                <div class="summary-board">
+                    <div class="total-spent">總花費: ¥<span id="total-amount">0</span></div>
+                    <div class="split-details">
+                        <div class="person"><span class="dot dot-timmy"></span>Timmy 付: ¥<span id="timmy-paid">0</span></div>
+                        <div class="person"><span class="dot dot-jj"></span>ㄐㄐ 付: ¥<span id="jj-paid">0</span></div>
                     </div>
-                    <div class="time-item" data-time="20:10">
-                        <span class="time">20:10</span>
-                        <div class="item-content">
-                            <span class="item-title">入境與提領行李 (預估)</span>
-                        </div>
-                    </div>
-                    <div class="time-item highlight" data-time="20:35">
-                        <span class="time">20:35</span>
-                        <div class="item-content">
-                            <span class="item-title">搭乘南海電鐵 Rapi:t β 68 號</span>
-                            <span class="transit-detail">🚆 南海特急 (關西機場 ➔ 南海難波) | 39 分鐘</span>
-                        </div>
-                    </div>
-                    <div class="time-item" data-time="21:14">
-                        <span class="time">21:14</span>
-                        <div class="item-content">
-                            <span class="item-title">抵達「南海難波站」</span>
-                            <span class="transit-detail">🚶 步行至飯店約 8 分鐘</span>
-                        </div>
-                    </div>
-                    <div class="time-item" data-time="21:30">
-                        <span class="time">21:30</span>
-                        <div class="item-content">
-                            <span class="item-title">入住 艾思利德酒店難波東</span>
-                        </div>
-                    </div>
+                    <div class="settlement" id="settlement-text">目前無須結算</div>
                 </div>
-                <div class="transport-section">
-                    <h3>📍 目的地導覽</h3>
-                    <a href="https://www.google.com/maps/dir//%E8%89%BE%E6%80%9D%E5%88%A9%E5%BE%B7%E9%85%92%E5%BA%97%E9%9B%A3%E6%B3%A2%E6%9D%B1+%E6%97%A5%E6%9C%AC%E3%80%92556-0005+Osaka,+Naniwa+Ward,+Nipponbashi,+4+Chome%E2%88%921%E2%88%9211/@34.6602506,135.4976652,16z/data=!3m1!4b1!4m9!4m8!1m0!1m5!1m1!1s0x6000e74e00f7c3c7:0x594096f17de5b18b!2m2!1d135.5071924!2d34.6602506!3e2?entry=ttu&g_ep=EgoyMDI2MDMyMy4xIKXMDSoASAFQAw%3D%3D" class="glass-btn">🚶 Google Map 導航 (步行)</a>
-                    <a href="mot-go://" class="glass-btn taxi">🚕 開啟手機內 GO Taxi</a>
+
+                <div class="add-expense-form">
+                    <div class="payer-toggle">
+                        <input type="radio" id="payer-timmy" name="payer" value="Timmy" checked>
+                        <label for="payer-timmy">Timmy 付款</label>
+                        <input type="radio" id="payer-jj" name="payer" value="ㄐㄐ">
+                        <label for="payer-jj">ㄐㄐ 付款</label>
+                    </div>
+                    <div class="input-row">
+                        <input type="number" id="expense-amount" placeholder="金額 (日幣 ¥)" required>
+                    </div>
+                    <div class="input-row">
+                        <input type="text" id="expense-desc" placeholder="項目 (例: 大喜豬排、地鐵)" required>
+                    </div>
+                    <button class="add-btn" onclick="addExpense()">➕ 記上一筆</button>
+                </div>
+
+                <div class="expense-list-container">
+                    <h3>消費明細</h3>
+                    <div id="expense-list"></div>
                 </div>
             </div>
-
-            <div id="content-day2">
-                <div class="ios-modal-header"><h2>Day 2: 難波・心齋橋 慢活日</h2></div>
-                <div class="itinerary-card">
-                    <div class="time-item" data-time="11:30">
-                        <span class="time">11:30</span>
-                        <div class="item-content">
-                            <span class="item-title">午餐：Tonkatsu Daiki (炸豬排 大喜)</span>
-                            <span class="transit-detail">🚶 從飯店步行約 12 分鐘</span>
-                        </div>
-                    </div>
-                    <div class="time-item" data-time="13:30">
-                        <span class="time">13:30</span>
-                        <div class="item-content">
-                            <span class="item-title">逛街：心齋橋筋 / 美國村 / 橘子街</span>
-                            <span class="transit-detail">🚶 沿商圈步行漫遊</span>
-                        </div>
-                    </div>
-                    <div class="time-item highlight" data-time="16:00">
-                        <span class="time">16:00</span>
-                        <div class="item-content">
-                            <span class="item-title">點心：米其林章魚燒 うまい屋</span>
-                            <span class="transit-detail">🚇 長堀橋站 ➔ 轉乘堺筋線至「天神橋筋六丁目」 | 約 20 分鐘</span>
-                        </div>
-                    </div>
-                    <div class="time-item" data-time="18:30">
-                        <span class="time">18:30</span>
-                        <div class="item-content">
-                            <span class="item-title">晚餐：WABISABI (創意料理)</span>
-                            <span class="transit-detail">🚇 堺筋線回「日本橋站」步行 | 約 25 分鐘</span>
-                        </div>
-                    </div>
-                    <div class="time-item" data-time="20:30">
-                        <span class="time">20:30</span>
-                        <div class="item-content">
-                            <span class="item-title">夜境：道頓堀川 燈光攝影</span>
-                            <span class="transit-detail">🚶 步行約 5 分鐘</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="transport-section">
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=Tonkatsu+Daiki+Osaka" class="glass-btn">🚶 導航至 炸豬排 大喜</a>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=艾思利德酒店難波東" class="glass-btn home-btn">🏠 累了想回家</a>
-                </div>
-            </div>
-
-            <div id="content-day3">
-                <div class="ios-modal-header"><h2>Day 3: 梅田建築與夜景方案</h2></div>
-                <div class="itinerary-card">
-                    <div class="time-item" data-time="11:30">
-                        <span class="time">11:30</span>
-                        <div class="item-content">
-                            <span class="item-title">午餐：さしす (Sashisu) 壽司</span>
-                            <span class="transit-detail">🚇 御堂筋線 (難波站 ➔ 梅田站) | 約 15 分鐘</span>
-                        </div>
-                    </div>
-                    <div class="time-item" data-time="14:00">
-                        <span class="time">14:00</span>
-                        <div class="item-content">
-                            <span class="item-title">梅田商圈 / 天神橋筋商店街</span>
-                            <span class="transit-detail">🚶 站內與地下街步行</span>
-                        </div>
-                    </div>
-                    <div class="time-item highlight" data-time="16:30">
-                        <span class="time">16:30</span>
-                        <div class="item-content">
-                            <span class="item-title">點心：道頓堀今井 本店 (烏龍麵)</span>
-                            <span class="transit-detail">🚇 御堂筋線 (梅田站 ➔ 難波站) | 約 15 分鐘</span>
-                        </div>
-                    </div>
-                    <div class="time-item" data-time="18:30">
-                        <span class="time">18:30</span>
-                        <div class="item-content">
-                            <span class="item-title">方案A：Dojimahama Tower (WowUs)</span>
-                            <span class="transit-detail">🚇 四橋線 (難波站 ➔ 西梅田站/肥後橋站) | 約 15 分鐘</span>
-                        </div>
-                    </div>
-                    <div class="time-item" data-time="20:00">
-                        <span class="time">20:00</span>
-                        <div class="item-content">
-                            <span class="item-title">方案B：梅田藍天大廈 (全景夜景)</span>
-                            <span class="transit-detail">🚶 步行前往約 15 分鐘</span>
-                        </div>
-                    </div>
-                    <div class="time-item" data-time="21:30">
-                        <span class="time">21:30</span>
-                        <div class="item-content">
-                            <span class="item-title">晚餐：Kaizoku (海賊) 居酒屋</span>
-                            <span class="transit-detail">🚇 御堂筋線返回道頓堀區域 | 約 20 分鐘</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="transport-section">
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=Osaka+Dojimahama+Tower" class="glass-btn">🏢 導航至 Dojimahama Tower</a>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=Umeda+Sky+Building" class="glass-btn taxi">🏙️ 導航至 梅田藍天大廈</a>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=艾思利德酒店難波東" class="glass-btn home-btn">🏠 累了想回家</a>
-                </div>
-            </div>
-
-            <div id="content-day4">
-                <div class="ios-modal-header"><h2>Day 4: 極致和牛與建築美學</h2></div>
-                <div class="itinerary-card">
-                    <div class="time-item" data-time="11:30">
-                        <span class="time">11:30</span>
-                        <div class="item-content">
-                            <span class="item-title">午餐：Shabucho (涮涮鍋)</span>
-                            <span class="transit-detail">🚶 從飯店步行約 10 分鐘</span>
-                        </div>
-                    </div>
-                    <div class="time-item highlight" data-time="14:00">
-                        <span class="time">14:00</span>
-                        <div class="item-content">
-                            <span class="item-title">攝影：難波 Parks 峽谷建築</span>
-                            <span class="transit-detail">🚶 步行前往約 10 分鐘</span>
-                        </div>
-                    </div>
-                    <div class="time-item" data-time="16:00">
-                        <span class="time">16:00</span>
-                        <div class="item-content">
-                            <span class="item-title">小吃：ゆめまる (章魚燒)</span>
-                            <span class="transit-detail">🚶 步行約 5 分鐘</span>
-                        </div>
-                    </div>
-                    <div class="time-item highlight" data-time="18:30">
-                        <span class="time">18:30</span>
-                        <div class="item-content">
-                            <span class="item-title">晚餐：燒肉龍 (黑毛和牛專門)</span>
-                            <span class="transit-detail">🚶 步行約 5 分鐘</span>
-                        </div>
-                    </div>
-                    <div class="time-item" data-time="21:00">
-                        <span class="time">21:00</span>
-                        <div class="item-content">
-                            <span class="item-title">散步：法善寺橫丁 夜拍</span>
-                            <span class="transit-detail">🚶 步行約 5 分鐘</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="transport-section">
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=燒肉龍+難波千日前店" class="glass-btn">🥩 導航至 燒肉龍</a>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=艾思利德酒店難波東" class="glass-btn home-btn">🏠 累了想回家</a>
-                </div>
-            </div>
-
-            <div id="content-day5">
-                <div class="ios-modal-header"><h2>Day 5: 熱血巨蛋與啟程京都</h2></div>
-                <div class="itinerary-card">
-                    <div class="time-item" data-time="11:00">
-                        <span class="time">11:00</span>
-                        <div class="item-content">
-                            <span class="item-title">早午餐：Onigiri Gorichan (飯糰)</span>
-                            <span class="transit-detail">🚶 從飯店步行至南海難波站 | 約 8 分鐘</span>
-                        </div>
-                    </div>
-                    <div class="time-item" data-time="13:00">
-                        <span class="time">13:00</span>
-                        <div class="item-content">
-                            <span class="item-title">採買：難波周邊最後衝刺</span>
-                            <span class="transit-detail">🚶 步行</span>
-                        </div>
-                    </div>
-                    <div class="time-item" data-time="15:00">
-                        <span class="time">15:00</span>
-                        <div class="item-content">
-                            <span class="item-title">點心：Takoman 章魚燒</span>
-                            <span class="transit-detail">🚶 步行</span>
-                        </div>
-                    </div>
-                    <div class="time-item highlight" data-time="18:00">
-                        <span class="time">18:00</span>
-                        <div class="item-content">
-                            <span class="item-title">觀賽：京瓷巨蛋看球</span>
-                            <span class="transit-detail">🚇 阪神難波線 (大阪難波站 ➔ 巨蛋前站) | 約 5 分鐘</span>
-                        </div>
-                    </div>
-                    <div class="time-item highlight" data-time="22:00">
-                        <span class="time">22:00</span>
-                        <div class="item-content">
-                            <span class="item-title">啟程：開車前往京都車站</span>
-                            <span class="transit-detail">🚗 開車自駕 | 約 1 小時 15 分鐘</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="transport-section">
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=京セラドーム大阪" class="glass-btn">⚾ 導航至 京瓷巨蛋</a>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=京都駅&travelmode=driving" class="glass-btn taxi">🚗 導航至 京都車站 (開車)</a>
-                </div>
-            </div>
-
-            <div id="content-day6"><h2>Day 6</h2><p>規劃中...</p></div>
-            <div id="content-day7"><h2>Day 7</h2><p>規劃中...</p></div>
-            <div id="content-day8"><h2>Day 8: 返程</h2><p>規劃中...</p></div>
         </div>
+
+        <div id="data-source" style="display:none;">
+            </div>
     </main>
 
     <footer><p>© 2026 Kansai Adventure | iOS 26 Visuals</p></footer>
