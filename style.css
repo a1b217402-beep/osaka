@@ -27,42 +27,30 @@ header {
 header h1 { margin: 0; font-size: 24px; font-family: 'HanaMin', 'Hanazono Mincho', 'Noto Serif JP', serif; color: #1d1d1f; }
 .subtitle { font-size: 13px; color: #6e6e73; margin: 5px 0 0 0; font-weight: 600; letter-spacing: 1px; }
 
-/* =========================================
-   新版日期導覽列 (Date Selector)
-   ========================================= */
-.date-nav {
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-    border-bottom: 1px solid rgba(255,255,255,0.4);
-    margin-bottom: 20px;
+main { padding-top: 20px; }
+
+/* 導覽列：4x2 網格排版 */
+.nav-container { 
+    display: grid; 
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 10px; 
+    width: 92%; max-width: 500px; 
+    margin: 0 auto 20px auto; box-sizing: border-box;
 }
 
-.date-selector { 
-    display: flex; overflow-x: auto; gap: 20px; 
-    padding: 15px 20px; max-width: 500px; margin: 0 auto;
+.nav-btn {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255,255,255,0.6); 
+    padding: 12px 0; border-radius: 16px; cursor: pointer; transition: 0.3s;
+    font-weight: 600; font-size: 13px; box-shadow: 0 4px 10px rgba(0,0,0,0.04); color: #1d1d1f;
 }
-.date-selector::-webkit-scrollbar { display: none; }
+.nav-btn:hover { background: var(--ios-blue); color: white; transform: translateY(-2px); border-color: var(--ios-blue); }
 
-.date-item {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    cursor: pointer; color: #a1a1a6; min-width: 45px; transition: 0.3s;
-}
-.date-item.active { color: #1d1d1f; }
-
-.date-item .day { font-size: 11px; font-weight: 700; letter-spacing: 1px; margin-bottom: -2px; }
-.date-item .date { font-size: 28px; font-family: 'HanaMin', 'Noto Serif JP', serif; line-height: 1; }
-.date-item .dot { 
-    width: 4px; height: 4px; background: #d93025; 
-    border-radius: 50%; opacity: 0; margin-top: 4px; transition: 0.3s; 
-}
-.date-item.active .dot { opacity: 1; }
-
-/* =========================================
-   新版 24 小時天氣面板
-   ========================================= */
+/* 24小時天氣面板 */
 .weather-widget {
     background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-    border-radius: 20px; margin: 0 20px 20px 20px; padding: 20px;
+    border-radius: 20px; margin: 0 auto 20px auto; padding: 20px;
+    width: 92%; max-width: 450px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.05); box-sizing: border-box;
 }
 
@@ -70,28 +58,22 @@ header h1 { margin: 0; font-size: 24px; font-family: 'HanaMin', 'Hanazono Mincho
     display: flex; justify-content: space-between; align-items: flex-end;
     border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 15px; margin-bottom: 15px;
 }
-
-.weather-left .city-name { margin: 0; font-size: 24px; font-family: 'HanaMin', 'Noto Serif JP', serif; color: #1d1d1f; }
+.weather-left { text-align: left; }
+.weather-left .city-name { margin: 0; font-size: 22px; font-family: 'HanaMin', 'Noto Serif JP', serif; color: #1d1d1f; }
 .weather-left .weather-subtitle { font-size: 12px; color: #86868b; font-weight: 500; }
-
 .weather-right { text-align: right; }
-.weather-right h3 { margin: 0; font-size: 16px; font-family: 'HanaMin', 'Noto Serif JP', serif; color: #1d1d1f; }
+.weather-right h3 { margin: 0; font-size: 15px; font-family: 'HanaMin', 'Noto Serif JP', serif; color: #1d1d1f; }
 .weather-right .weather-provider { font-size: 11px; color: #a1a1a6; }
 
-/* 橫向滑動的小時預報 */
-.hourly-forecast {
-    display: flex; overflow-x: auto; gap: 20px; padding-bottom: 5px;
-}
+.hourly-forecast { display: flex; overflow-x: auto; gap: 20px; padding-bottom: 5px; }
 .hourly-forecast::-webkit-scrollbar { display: none; }
 
-.hourly-item {
-    display: flex; flex-direction: column; align-items: center; min-width: 40px;
-}
+.hourly-item { display: flex; flex-direction: column; align-items: center; min-width: 40px; }
 .hourly-item .h-time { font-size: 13px; color: #6e6e73; font-weight: 500; margin-bottom: 8px; }
 .hourly-item .h-icon { font-size: 22px; margin-bottom: 8px; }
 .hourly-item .h-temp { font-size: 15px; font-weight: 600; color: #1d1d1f; }
 
-/* ========================================= */
+/* 首頁方框 */
 .hero { display: flex; justify-content: center; align-items: center; padding: 10px 20px 60px 20px; text-align: center; }
 .hero-card { 
     background: var(--glass-white); backdrop-filter: blur(30px) saturate(150%); -webkit-backdrop-filter: blur(30px) saturate(150%);
