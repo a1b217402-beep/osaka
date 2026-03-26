@@ -28,7 +28,6 @@ function openModal(dayId, event) {
 
 function openCurrentDayPreview(event) {
     const now = new Date();
-    // 嚴格判定是否在旅程區間 (8/10 ~ 8/17)
     const year = now.getFullYear();
     const month = now.getMonth() + 1;
     const date = now.getDate();
@@ -94,13 +93,9 @@ function updateItineraryPreview() {
     const heroNextTitle = document.getElementById('preview-next-title');
     const heroNextTime = document.getElementById('preview-next-time');
 
-    // 判斷是否為「實際旅行期間」
     const isTripTime = (year === 2026 && month === 8 && date >= 10 && date <= 17);
-
-    // 每次更新前，先清除網頁上所有的 active 閃爍圓點
     document.querySelectorAll('.time-item').forEach(el => el.classList.remove('active'));
 
-    // 如果時間還沒到 8/10，或者已經超過 8/17
     if (!isTripTime) {
         if (year < 2026 || (year === 2026 && (month < 8 || (month === 8 && date < 10)))) {
             if(heroNowTime) heroNowTime.innerText = "8/10";
@@ -113,12 +108,11 @@ function updateItineraryPreview() {
             if(heroNextTitle) heroNextTitle.innerText = "整理滿滿回憶";
             if(heroNextTime) heroNextTime.innerText = "End";
         }
-        return; // 終止後續的閃爍與追蹤邏輯
+        return; 
     }
 
-    // --- 以下為旅行期間 (8/10 ~ 8/17) 的追蹤邏輯 ---
     const currentScore = now.getHours() * 60 + now.getMinutes();
-    const currentDayNum = date - 9; // 8/10 轉換為 Day 1
+    const currentDayNum = date - 9; 
     const dayDataId = `content-day${currentDayNum}`;
     const daySection = document.getElementById(dayDataId);
 
@@ -147,10 +141,8 @@ function updateItineraryPreview() {
         heroNextTitle.innerText = nextItem.title;
         heroNextTime.innerText = nextItem.time;
 
-        // 【列車站閃爍燈邏輯】只有「今天」的「當下行程」，圓點才會亮起
         if (items[currentIdx]) items[currentIdx].classList.add('active');
 
-        // 如果當下正打開著今天的視窗，也讓視窗內的圓點亮起
         const modal = document.getElementById('itineraryModal');
         const modalHeader = document.querySelector('#modalBody h2');
         if (modal.classList.contains('open') && modalHeader && modalHeader.innerText.includes(`Day ${currentDayNum}`)) {
@@ -175,7 +167,6 @@ function init() {
     updateItineraryPreview();
     setInterval(updateItineraryPreview, 30000);
 
-    // 記帳本滑動切換邏輯
     const toggleArea = document.querySelector('.payer-toggle');
     const slider = document.querySelector('.toggle-slider');
     
@@ -218,8 +209,13 @@ function init() {
 document.addEventListener('DOMContentLoaded', init);
 
 /* =========================================
-   💰 記帳本資料庫邏輯
+   ☁️ 記帳本「雲端同步」邏輯 (Google Sheets API)
 ========================================= */
+
+// 你的 Google Apps Script 雲端網址
+const CLOUD_API_URL = "https://script.google.com/macros/s/AKfycbx61FkjxrU5yKUmmvOw0kd_hvEUN73B8CfMZaTwFzyHfTPLN8n6L8rmkm4E6RgA2hUDRw/exec";
+
+// 優先使用本地暫存，確保一打開就有畫面
 let expenses = JSON.parse(localStorage.getItem('travelExpenses')) || [];
 
 function openExpenseModal(event) {
@@ -227,7 +223,12 @@ function openExpenseModal(event) {
     modal.style.display = 'flex';
     setTimeout(() => { modal.classList.add('open'); }, 10);
     document.body.style.overflow = 'hidden';
-    renderExpenses();
+    
+    // 1. 先用本地資料秒速渲染畫面 (如果有資料的話)
+    renderExpenses(expenses.length === 0); 
+    
+    // 2. 背景偷偷去雲端抓最新資料
+    syncFromCloud();
 }
 
 function closeExpenseModal() {
@@ -244,7 +245,26 @@ window.onclick = function(event) {
     if (event.target === expModal) closeExpenseModal();
 };
 
-function addExpense() {
+// ☁️ 從雲端抓取最新記帳資料
+async function syncFromCloud() {
+    try {
+        // 加上時間戳記防止手機瀏覽器快取舊資料
+        const response = await fetch(CLOUD_API_URL + "?t=" + new Date().getTime());
+        const data = await response.json();
+        
+        // 更新本地端資料並存檔
+        expenses = data;
+        localStorage.setItem('travelExpenses', JSON.stringify(expenses));
+        
+        // 重新渲染畫面
+        renderExpenses();
+    } catch (error) {
+        console.error("雲端同步失敗，使用本地資料顯示", error);
+    }
+}
+
+// ☁️ 新增一筆花費並上傳雲端
+async function addExpense() {
     const payer = document.querySelector('input[name="payer"]:checked').value;
     const amountInput = document.getElementById('expense-amount').value;
     const descInput = document.getElementById('expense-desc').value;
@@ -252,34 +272,75 @@ function addExpense() {
     
     if (!amount || amount <= 0 || !descInput.trim()) { alert("請輸入有效的金額與項目！"); return; }
 
-    const newExpense = { id: Date.now(), payer: payer, amount: amount, desc: descInput.trim(), date: new Date().toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) };
+    const newExpense = { 
+        action: "add", // 告訴雲端我們要新增
+        id: Date.now(), 
+        payer: payer, 
+        amount: amount, 
+        desc: descInput.trim(), 
+        date: new Date().toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) 
+    };
+
+    // 【無感同步】1. 先直接塞入畫面，讓使用者覺得超順暢
     expenses.push(newExpense);
     localStorage.setItem('travelExpenses', JSON.stringify(expenses));
+    renderExpenses();
     
+    // 清空輸入框
     document.getElementById('expense-amount').value = '';
     document.getElementById('expense-desc').value = '';
-    renderExpenses();
+
+    // 【無感同步】2. 背景偷偷發送給 Google 試算表
+    try {
+        await fetch(CLOUD_API_URL, {
+            method: 'POST',
+            mode: 'no-cors', // 避開跨域限制
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newExpense)
+        });
+        // 不需等待回應，試算表會自己記錄
+    } catch(e) { console.error("雲端上傳失敗", e); }
 }
 
-function deleteExpense(id) {
+// ☁️ 刪除花費並同步雲端
+async function deleteExpense(id) {
     if(confirm("確定要刪除這筆紀錄嗎？")) {
-        expenses = expenses.filter(exp => exp.id !== id);
+        // 【無感同步】1. 畫面先秒刪
+        expenses = expenses.filter(exp => exp.id != id); // 使用 != 避免型別問題
         localStorage.setItem('travelExpenses', JSON.stringify(expenses));
         renderExpenses();
+
+        // 【無感同步】2. 背景通知 Google 試算表刪除這筆
+        try {
+            await fetch(CLOUD_API_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: "delete", id: id })
+            });
+        } catch(e) { console.error("雲端刪除失敗", e); }
     }
 }
 
-function renderExpenses() {
+// 渲染結算畫面 (新增了 isLoading 狀態)
+function renderExpenses(isLoading = false) {
     const listContainer = document.getElementById('expense-list');
     listContainer.innerHTML = '';
+    
+    if (isLoading) {
+        listContainer.innerHTML = '<p style="text-align:center; color:#86868b; font-size:12px; margin-top:20px;">☁️ 雲端同步中...</p>';
+        return;
+    }
+
     let timmyTotal = 0; let jjTotal = 0;
     const reversedExpenses = [...expenses].reverse();
 
     reversedExpenses.forEach(exp => {
-        if (exp.payer === 'Timmy') { timmyTotal += exp.amount; } else { jjTotal += exp.amount; }
+        if (exp.payer === 'Timmy') { timmyTotal += parseInt(exp.amount); } 
+        else { jjTotal += parseInt(exp.amount); }
         const iconStr = exp.payer === 'Timmy' ? '👦🏻' : '👧🏻';
         const colorClass = exp.payer === 'Timmy' ? 'color-timmy' : 'color-jj';
-        listContainer.innerHTML += `<div class="exp-item"><div class="exp-item-left"><div class="exp-avatar ${colorClass}">${iconStr}</div><div class="exp-info"><span class="exp-desc">${exp.desc}</span><span class="exp-date">${exp.date}</span></div></div><div class="exp-item-right"><span class="exp-price">¥${exp.amount.toLocaleString()}</span><div class="exp-delete" onclick="deleteExpense(${exp.id})">🗑️</div></div></div>`;
+        listContainer.innerHTML += `<div class="exp-item"><div class="exp-item-left"><div class="exp-avatar ${colorClass}">${iconStr}</div><div class="exp-info"><span class="exp-desc">${exp.desc}</span><span class="exp-date">${exp.date}</span></div></div><div class="exp-item-right"><span class="exp-price">¥${parseInt(exp.amount).toLocaleString()}</span><div class="exp-delete" onclick="deleteExpense('${exp.id}')">🗑️</div></div></div>`;
     });
 
     if(reversedExpenses.length === 0) listContainer.innerHTML = '<p style="text-align:center; color:#86868b; font-size:12px; margin-top:20px;">尚無紀錄，開始記帳吧！</p>';
