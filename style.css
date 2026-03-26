@@ -1,115 +1,53 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
-
-:root {
-    --ios-blue: #0071e3;
-    --glass-white: rgba(255, 255, 255, 0.35);
-    --c1: #ff9a9e; --c2: #fad0c4; --c3: #a1c4fd;
-}
-
-body { 
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Noto Sans TC", sans-serif;
-    margin: 0; color: #1d1d1f;
-    -webkit-font-smoothing: antialiased;
-    background: linear-gradient(217deg, var(--c1), rgba(255,0,0,0) 70.71%),
-                linear-gradient(127deg, var(--c2), rgba(0,255,0,0) 70.71%),
-                linear-gradient(336deg, var(--c3), rgba(0,0,255,0) 70.71%);
-    background-size: 200% 200%;
-    animation: liquidBg 15s ease infinite; 
-    background-attachment: fixed; 
-    min-height: 100vh;
-}
-
-@keyframes liquidBg {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-header { 
-    background: rgba(255, 255, 255, 0.5);
-    backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-    padding: 15px 10px; text-align: center; position: sticky; top: 0; z-index: 100;
-    border-bottom: 1px solid rgba(255,255,255,0.3);
-}
-
-/* 導覽列：改為 4x2 網格排版 */
-.nav-container { 
-    display: grid; 
-    grid-template-columns: repeat(4, 1fr); /* 強制均分為 4 欄 */
-    gap: 8px; /* 按鈕之間的間距 */
-    justify-content: center; 
-    max-width: 400px; /* 限制最大寬度，電腦版才不會太寬 */
-    margin: 10px auto 0 auto; 
-}
-
-.nav-btn {
-    background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(255,255,255,0.5); 
-    padding: 10px 0; /* 取消左右內距，由 grid 自動分配寬度 */
-    border-radius: 16px; cursor: pointer; transition: 0.3s;
-    font-weight: 600; font-size: 13px; /* 微調字體大小以適應手機螢幕 */
-    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-    width: 100%;
-}
-.nav-btn:hover { background: var(--ios-blue); color: white; transform: translateY(-2px); border-color: var(--ios-blue); }
-
-.hero { 
-    display: flex; justify-content: center; align-items: center;
-    padding: 80px 20px; text-align: center; 
-}
-.hero-card { 
-    background: var(--glass-white); 
-    backdrop-filter: blur(30px) saturate(150%);
-    -webkit-backdrop-filter: blur(30px) saturate(150%);
-    width: 100%; max-width: 450px; 
-    padding: 40px 30px; 
-    border-radius: 30px; 
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
-    box-sizing: border-box;
-}
-.hero-card h2 { margin-top: 0; color: #1d1d1f; }
-.hero-card p { color: #424245; margin-bottom: 0; line-height: 1.6; font-weight: 500; }
-
-.modal {
-    display: none; position: fixed; z-index: 1000; left: 0; top: 0;
-    width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.25); 
-    backdrop-filter: blur(5px); 
-    -webkit-backdrop-filter: blur(5px);
-    opacity: 0; transition: opacity 0.4s ease;
-}
-
-.modal.open { display: flex !important; justify-content: center; align-items: center; opacity: 1; }
-
+/* =========================================
+   彈出視窗主體：提高白色不透明度，解決灰暗感
+   ========================================= */
 .modal-content {
-    background: var(--glass-white);
+    background: rgba(255, 255, 255, 0.92); /* 從原本的 0.35 提高到 0.92，大幅增加閱讀性 */
     backdrop-filter: blur(40px) saturate(180%);
     -webkit-backdrop-filter: blur(40px) saturate(180%);
     padding: 30px; width: 88%; max-width: 450px;
-    border-radius: 35px; border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 35px; border: 1px solid rgba(255, 255, 255, 0.8);
     box-shadow: 0 30px 60px rgba(0,0,0,0.15);
     transform: scale(0.85); transition: transform 0.5s cubic-bezier(0.15, 1, 0.3, 1.1);
     position: relative;
 }
 
 .modal.open .modal-content { transform: scale(1); }
-.close-btn { position: absolute; right: 20px; top: 15px; font-size: 26px; cursor: pointer; color: rgba(0,0,0,0.4); transition: 0.2s;}
+.close-btn { position: absolute; right: 20px; top: 15px; font-size: 26px; cursor: pointer; color: rgba(0,0,0,0.3); transition: 0.2s;}
 .close-btn:hover { color: #000; }
 
-.itinerary-card { background: rgba(255, 255, 255, 0.5); border-radius: 20px; padding: 15px; margin-bottom: 20px; }
-.time-item { display: flex; margin-bottom: 10px; font-size: 15px; }
-.time-item .time { width: 55px; font-weight: 700; color: var(--ios-blue); }
-.time-item.highlight { background: rgba(0, 113, 227, 0.1); padding: 10px; border-radius: 12px; }
+/* 行程卡片：改為純白底色，讓文字對比度最高 */
+.itinerary-card { 
+    background: #ffffff; 
+    border-radius: 20px; 
+    padding: 18px; 
+    margin-bottom: 20px; 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.04); /* 加入微陰影拉出立體感 */
+}
 
+/* 加深字體顏色與微調粗細 */
+.time-item { display: flex; margin-bottom: 12px; font-size: 15px; color: #1d1d1f; font-weight: 500;} 
+.time-item .time { width: 55px; font-weight: 700; color: var(--ios-blue); }
+.time-item.highlight { background: rgba(0, 113, 227, 0.08); padding: 10px; border-radius: 12px; }
+
+/* 導覽按鈕：提高亮度，改為純白底色 */
 .glass-btn {
     display: flex; align-items: center; justify-content: center; gap: 10px;
-    background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(255,255,255,0.8);
+    background: #ffffff; 
+    border: 1px solid rgba(0,0,0,0.05);
     padding: 14px; margin: 8px 0; border-radius: 18px;
     text-decoration: none; color: #1d1d1f; font-weight: 600; transition: 0.2s;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
 }
-.glass-btn:hover { background: rgba(255,255,255,0.9); transform: scale(1.02); }
-.glass-btn.taxi { background: rgba(255, 211, 0, 0.3); border-color: rgba(255, 211, 0, 0.5); }
-.address-text { font-size: 14px; color: #1d1d1f; text-align: center; margin-top: 15px; font-weight: 600; }
+.glass-btn:hover { background: #f5f5f7; transform: scale(1.02); }
+
+/* 計程車按鈕：給予專屬的明亮暖黃配色 */
+.glass-btn.taxi { 
+    background: #fffbef; 
+    border-color: #fce48b; 
+    color: #b08500; 
+}
+
+.address-text { font-size: 14px; color: #424245; text-align: center; margin-top: 15px; font-weight: 600; }
 
 footer { text-align: center; padding: 30px; color: #424245; font-weight: 500;}
