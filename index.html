@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>大阪京都之旅 - 2026</title>
+    <title>大阪京都之旅 - iOS 26 Style</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -26,12 +26,12 @@
     <main>
         <section class="hero">
             <div class="hero-card">
-                <h2>準備出發！</h2>
-                <p>點擊上方日期查看詳細行程規劃</p>
+                <h2>探索關西</h2>
+                <p>點擊上方按鈕開啟流體玻璃行程表</p>
             </div>
         </section>
 
-        <div id="itineraryModal" class="modal">
+        <div id="itineraryModal" class="modal" style="display: none;">
             <div class="modal-content">
                 <span class="close-btn" onclick="closeModal()">&times;</span>
                 <div id="modalBody"></div>
@@ -40,19 +40,44 @@
 
         <div id="data-source" style="display:none;">
             <div id="content-day1">
-                <h2>🗓️ Day 1: 抵達關西</h2>
-                <p>搭乘南海電鐵前往大阪市區，入住後前往心齋橋散策。</p>
+                <h2>🗓️ Day 1: 抵達大阪</h2>
+                <p>搭乘南海電鐵 Rapi:t 前往難波，入住後享受道頓堀美食。</p>
             </div>
             <div id="content-day2">
-                <h2>🎢 Day 2: 環球影城</h2>
-                <p>整天在日本環球影城 (USJ)，記得先下載官方 App 抽整理券。</p>
+                <h2>🎢 Day 2: 日本環球影城</h2>
+                <p>建議 07:30 前到達門口排隊，首衝任天堂世界！</p>
             </div>
             <div id="content-day3">
-                <h2>🏯 Day 3: 大阪文化</h2>
-                <p>參觀大阪城天守閣，下午前往通天閣體驗下町風情。</p>
+                <h2>🏯 Day 3: 大阪城與通天閣</h2>
+                <p>早上參觀天守閣，下午去新世界吃炸串。</p>
             </div>
             <div id="content-day4">
-                <h2>🍵 Day 4: 進入京都</h2>
-                <p>移動至京都，參觀金閣寺與龍安寺，晚上在祇園用餐。</p>
+                <h2>🍵 Day 4: 京都古韻</h2>
+                <p>移動至京都，參觀金閣寺，傍晚散步祇園花見小路。</p>
             </div>
-            <div id="
+            <div id="content-day5">
+                <h2>🎋 Day 5: 嵐山小火車</h2>
+                <p>體驗嵯峨野觀光鐵道，漫步竹林小徑。</p>
+            </div>
+            <div id="content-day6">
+                <h2>⛩️ Day 6: 千本鳥居</h2>
+                <p>伏見稻荷大社爬山，下午走訪清水寺舞台。</p>
+            </div>
+            <div id="content-day7">
+                <h2>🦌 Day 7: 奈良小鹿</h2>
+                <p>近鐵奈良站出發，東大寺看大佛，注意小鹿搶食！</p>
+            </div>
+            <div id="content-day8">
+                <h2>✈️ Day 8: 驚喜採買</h2>
+                <p>京都車站伊勢丹百貨最後採買，搭 HARUKA 回機場。</p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Kansai Explorer | iOS 26 Liquid Design</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
