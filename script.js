@@ -1,9 +1,4 @@
-/* =========================================
-   🔧 全域變數與初始化
-========================================= */
 let currentActiveButton = null;
-const CLOUD_API_URL = "https://script.google.com/macros/s/AKfycbx61FkjxrU5yKUmmvOw0kd_hvEUN73B8CfMZaTwFzyHfTPLN8n6L8rmkm4E6RgA2hUDRw/exec";
-let expenses = JSON.parse(localStorage.getItem('travelExpenses')) || [];
 
 function setModalOrigin() {
     if (!currentActiveButton) return;
@@ -16,9 +11,6 @@ function setModalOrigin() {
     modalContent.style.transformOrigin = `${originX}px ${originY}px`;
 }
 
-/* =========================================
-   🗓️ 行程視窗控制
-========================================= */
 function openModal(dayId, event) {
     const modal = document.getElementById('itineraryModal');
     const modalBody = document.getElementById('modalBody');
@@ -31,7 +23,6 @@ function openModal(dayId, event) {
         void modal.offsetWidth; 
         modal.classList.add('open');
         document.body.style.overflow = 'hidden';
-        updateItineraryPreview();
     }
 }
 
@@ -62,16 +53,6 @@ function closeModal() {
     }
 }
 
-window.onclick = function(event) {
-    const itModal = document.getElementById('itineraryModal');
-    const expModal = document.getElementById('expenseModal');
-    if (event.target === itModal) closeModal();
-    if (event.target === expModal) closeExpenseModal();
-};
-
-/* =========================================
-   🌤️ 天氣元件 (Open-Meteo API)
-========================================= */
 function getWeatherEmoji(code) {
     const table = { 0: "☀️", 1: "⛅", 2: "⛅", 3: "☁️", 45: "🌫️", 51: "🌧️", 61: "🌧️", 95: "⛈️" };
     return table[code] || "🌤️";
@@ -101,9 +82,6 @@ async function fetchWeather(lat, lon, cityName) {
     } catch (e) { titleDesc.innerHTML = "同步中"; }
 }
 
-/* =========================================
-   🧭 行程追蹤與 2026 日期偵測邏輯
-========================================= */
 function updateItineraryPreview() {
     const now = new Date();
     const year = now.getFullYear();
@@ -114,25 +92,33 @@ function updateItineraryPreview() {
     const heroNowTitle = document.getElementById('preview-now-title');
     const heroNextTitle = document.getElementById('preview-next-title');
     const heroNextTime = document.getElementById('preview-next-time');
+    const heroNextLabel = document.getElementById('preview-next-label');
 
     const isTripTime = (year === 2026 && month === 8 && date >= 10 && date <= 17);
     document.querySelectorAll('.time-item').forEach(el => el.classList.remove('active'));
 
+    const targetDate = new Date(2026, 7, 10); 
+    const diffTime = targetDate - now;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
     if (!isTripTime) {
-        if (year < 2026 || (year === 2026 && (month < 8 || (month === 8 && date < 10)))) {
-            if(heroNowTime) heroNowTime.innerText = "8/10";
+        if (diffDays > 0) {
+            if(heroNowTime) heroNowTime.innerText = "⏳";
             if(heroNowTitle) heroNowTitle.innerText = "期待出發";
             if(heroNextTitle) heroNextTitle.innerText = "大阪京都行";
-            if(heroNextTime) heroNextTime.innerText = "Day 1";
+            if(heroNextTime) heroNextTime.innerText = `${diffDays} 天`;
+            if(heroNextLabel) heroNextLabel.innerText = "距離出發";
         } else {
             if(heroNowTime) heroNowTime.innerText = "🏠";
             if(heroNowTitle) heroNowTitle.innerText = "旅途結束";
-            if(heroNextTitle) heroNextTitle.innerText = "回憶滿滿";
-            if(heroNextTime) heroNextTime.innerText = "Done";
+            if(heroNextTitle) heroNextTitle.innerText = "整理滿滿回憶";
+            if(heroNextTime) heroNextTime.innerText = "End";
+            if(heroNextLabel) heroNextLabel.innerText = "下個時間";
         }
         return; 
     }
 
+    if(heroNextLabel) heroNextLabel.innerText = "下個時間";
     const currentScore = now.getHours() * 60 + now.getMinutes();
     const currentDayNum = date - 9; 
     const dayDataId = `content-day${currentDayNum}`;
@@ -144,25 +130,22 @@ function updateItineraryPreview() {
     const itinerary = items.map(el => {
         const [h, m] = el.getAttribute('data-time').split(':').map(Number);
         const titleEl = el.querySelector('.item-title');
-        const itemTitle = titleEl ? titleEl.innerText : "未命名行程";
+        const itemTitle = titleEl ? titleEl.innerText : el.querySelector('span:last-child').innerText;
         return { time: el.getAttribute('data-time'), score: h * 60 + m, title: itemTitle };
     });
 
     let currentIdx = itinerary.findLastIndex(item => currentScore >= item.score);
     
     if (currentIdx === -1) {
-        heroNowTime.innerText = "晨間";
-        heroNowTitle.innerText = "準備出門";
-        heroNextTitle.innerText = itinerary[0].title;
-        heroNextTime.innerText = itinerary[0].time;
+        heroNowTime.innerText = "晨間"; heroNowTitle.innerText = "準備出門";
+        heroNextTitle.innerText = itinerary[0].title; heroNextTime.innerText = itinerary[0].time;
     } else {
         const currentItem = itinerary[currentIdx];
         const nextItem = itinerary[currentIdx + 1] || { time: "--:--", title: "行程結束" };
-        heroNowTime.innerText = currentItem.time;
-        heroNowTitle.innerText = currentItem.title;
-        heroNextTitle.innerText = nextItem.title;
-        heroNextTime.innerText = nextItem.time;
+        heroNowTime.innerText = currentItem.time; heroNowTitle.innerText = currentItem.title;
+        heroNextTitle.innerText = nextItem.title; heroNextTime.innerText = nextItem.time;
 
+        if (items[currentIdx]) items[currentIdx].classList.add('active');
         const modal = document.getElementById('itineraryModal');
         const modalHeader = document.querySelector('#modalBody h2');
         if (modal.classList.contains('open') && modalHeader && modalHeader.innerText.includes(`Day ${currentDayNum}`)) {
@@ -172,50 +155,123 @@ function updateItineraryPreview() {
     }
 }
 
+function init() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            const { latitude: lat, longitude: lon } = pos.coords;
+            try {
+                const geo = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=zh`);
+                const gData = await geo.json();
+                fetchWeather(lat, lon, gData.city || "目前位置");
+            } catch { fetchWeather(lat, lon, "目前位置"); }
+        }, () => fetchWeather(34.69, 135.50, "大阪市 (預設)"));
+    } else { fetchWeather(34.69, 135.50, "大阪市 (預設)"); }
+
+    updateItineraryPreview();
+    setInterval(updateItineraryPreview, 30000);
+    renderPhotoDiary();
+
+    const toggleArea = document.querySelector('.payer-toggle');
+    const slider = document.querySelector('.toggle-slider');
+    
+    if (toggleArea && slider) {
+        let isDragging = false; let startX = 0; let currentTranslate = 0; let maxTranslate = 0;
+        toggleArea.addEventListener('touchstart', e => {
+            isDragging = true; startX = e.changedTouches[0].clientX;
+            maxTranslate = slider.offsetWidth;
+            const radioJJ = document.getElementById('payer-jj');
+            currentTranslate = radioJJ.checked ? maxTranslate : 0;
+            slider.style.transition = 'none';
+        }, { passive: true });
+        
+        toggleArea.addEventListener('touchmove', e => {
+            if (!isDragging) return;
+            let currentX = e.changedTouches[0].clientX;
+            let diff = currentX - startX;
+            let newTranslate = currentTranslate + diff;
+            if (newTranslate < 0) newTranslate = 0;
+            if (newTranslate > maxTranslate) newTranslate = maxTranslate;
+            slider.style.transform = `translateX(${newTranslate}px)`;
+            if (Math.abs(diff) > 5 && e.cancelable) e.preventDefault();
+        }, { passive: false });
+        
+        toggleArea.addEventListener('touchend', e => {
+            if (!isDragging) return;
+            isDragging = false;
+            let diff = e.changedTouches[0].clientX - startX;
+            slider.style.transition = ''; slider.style.transform = '';
+            if (Math.abs(diff) > 5) {
+                let finalTranslate = currentTranslate + diff;
+                if (finalTranslate > maxTranslate / 2) { document.getElementById('payer-jj').checked = true; } 
+                else { document.getElementById('payer-timmy').checked = true; }
+            }
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', init);
+
 /* =========================================
-   💰 記帳本邏輯 (雲端同步)
+   📷 旅程回憶錄邏輯
 ========================================= */
-async function syncFromCloud() {
-    try {
-        const response = await fetch(CLOUD_API_URL + "?t=" + new Date().getTime());
-        const data = await response.json();
-        if (Array.isArray(data)) {
-            expenses = data;
-            localStorage.setItem('travelExpenses', JSON.stringify(expenses));
-            renderExpenses();
+let travelPhotos = JSON.parse(localStorage.getItem('travelPhotos')) || {};
+let currentUploadDay = 1;
+
+function renderPhotoDiary() {
+    const grid = document.getElementById('photo-grid');
+    grid.innerHTML = '';
+    
+    for (let i = 1; i <= 8; i++) {
+        const hasPhoto = !!travelPhotos[`day${i}`];
+        if (hasPhoto) {
+            grid.innerHTML += `<div class="photo-card" onclick="triggerUpload(${i})"><div class="photo-card-inner"><img src="${travelPhotos[`day${i}`]}" alt="Day ${i}"><div class="photo-overlay-label">Day ${i}</div></div></div>`;
+        } else {
+            grid.innerHTML += `<div class="photo-card" onclick="triggerUpload(${i})"><div class="photo-card-inner empty"><span class="photo-add-icon">➕</span><span class="photo-day-label">Day ${i}</span></div></div>`;
         }
-    } catch (e) { console.error("同步失敗", e); }
+    }
 }
 
-async function addExpense() {
-    const payer = document.querySelector('input[name="payer"]:checked').value;
-    const amount = parseInt(document.getElementById('expense-amount').value);
-    const desc = document.getElementById('expense-desc').value.trim();
-    if (!amount || amount <= 0 || !desc) { alert("資訊不完整"); return; }
-
-    const newExp = { action: "add", id: Date.now().toString(), payer, amount, desc, date: new Date().toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) };
-    expenses.push(newExp);
-    localStorage.setItem('travelExpenses', JSON.stringify(expenses));
-    renderExpenses();
-    document.getElementById('expense-amount').value = '';
-    document.getElementById('expense-desc').value = '';
-    fetch(CLOUD_API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(newExp) }).catch(e => console.error(e));
+function triggerUpload(day) {
+    currentUploadDay = day;
+    document.getElementById('photo-upload-input').click();
 }
 
-async function deleteExpense(id) {
-    if(!confirm("確定刪除？")) return;
-    expenses = expenses.filter(exp => exp.id != id);
-    localStorage.setItem('travelExpenses', JSON.stringify(expenses));
-    renderExpenses();
-    fetch(CLOUD_API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: "delete", id: id }) }).catch(e => console.error(e));
+function handlePhotoUpload(event) {
+    const file = event.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 500;
+            const scaleSize = MAX_WIDTH / img.width;
+            canvas.width = MAX_WIDTH;
+            canvas.height = img.height * scaleSize;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            const base64 = canvas.toDataURL('image/jpeg', 0.6); 
+            travelPhotos[`day${currentUploadDay}`] = base64;
+            localStorage.setItem('travelPhotos', JSON.stringify(travelPhotos));
+            renderPhotoDiary();
+        }
+        img.src = e.target.result;
+    }
+    reader.readAsDataURL(file);
 }
 
-function openExpenseModal() {
+/* =========================================
+   ☁️ 記帳本邏輯
+========================================= */
+const CLOUD_API_URL = "https://script.google.com/macros/s/AKfycbx61FkjxrU5yKUmmvOw0kd_hvEUN73B8CfMZaTwFzyHfTPLN8n6L8rmkm4E6RgA2hUDRw/exec";
+let expenses = JSON.parse(localStorage.getItem('travelExpenses')) || [];
+
+function openExpenseModal(event) {
     const modal = document.getElementById('expenseModal');
     modal.style.display = 'flex';
     setTimeout(() => { modal.classList.add('open'); }, 10);
     document.body.style.overflow = 'hidden';
-    renderExpenses(expenses.length === 0);
+    renderExpenses(expenses.length === 0); 
     syncFromCloud();
 }
 
@@ -226,81 +282,130 @@ function closeExpenseModal() {
     document.body.style.overflow = '';
 }
 
-function renderExpenses(isLoading = false) {
-    const listContainer = document.getElementById('expense-list');
-    listContainer.innerHTML = isLoading ? '<p style="text-align:center; color:#86868b; font-size:12px; margin-top:20px;">☁️ 同步中...</p>' : '';
-    let tTotal = 0; let jTotal = 0;
-    [...expenses].reverse().forEach(exp => {
-        const amt = parseInt(exp.amount);
-        if (exp.payer === 'Timmy') tTotal += amt; else jTotal += amt;
-        const icon = exp.payer === 'Timmy' ? '👦🏻' : '👧🏻';
-        const color = exp.payer === 'Timmy' ? 'color-timmy' : 'color-jj';
-        listContainer.innerHTML += `<div class="exp-item"><div class="exp-item-left"><div class="exp-avatar ${color}">${icon}</div><div class="exp-info"><span class="exp-desc">${exp.desc}</span><span class="exp-date">${exp.date}</span></div></div><div class="exp-item-right"><span class="exp-price">¥${amt.toLocaleString()}</span><div class="exp-delete" onclick="deleteExpense('${exp.id}')">🗑️</div></div></div>`;
-    });
-    const total = tTotal + jTotal;
-    document.getElementById('total-amount').innerText = total.toLocaleString();
-    document.getElementById('timmy-paid').innerText = tTotal.toLocaleString();
-    document.getElementById('jj-paid').innerText = jTotal.toLocaleString();
-    const sett = document.getElementById('settlement-text');
-    const diff = tTotal - jTotal;
-    if (diff > 0) { sett.innerHTML = `⚠️ <b>ㄐㄐ</b> 需給 Timmy： <b>¥${(diff/2).toLocaleString()}</b>`; sett.className="settlement owe-timmy"; }
-    else if (diff < 0) { sett.innerHTML = `⚠️ <b>Timmy</b> 需給 ㄐㄐ： <b>¥${(Math.abs(diff)/2).toLocaleString()}</b>`; sett.className="settlement owe-jj"; }
-    else { sett.innerHTML = `✅ 帳目平衡`; sett.className="settlement balanced"; }
+window.onclick = function(event) {
+    const itModal = document.getElementById('itineraryModal');
+    const expModal = document.getElementById('expenseModal');
+    if (event.target === itModal) closeModal();
+    if (event.target === expModal) closeExpenseModal();
+};
+
+async function syncFromCloud() {
+    try {
+        const response = await fetch(CLOUD_API_URL + "?t=" + new Date().getTime());
+        const data = await response.json();
+        if (Array.isArray(data)) {
+            expenses = data;
+            localStorage.setItem('travelExpenses', JSON.stringify(expenses));
+            renderExpenses();
+            renderCategorySummary();
+        }
+    } catch (error) { console.error("雲端同步失敗", error); }
 }
 
-/* =========================================
-   ✨ 核心啟動 (含動態位置偵測修正)
-========================================= */
-function init() {
-    // 🚀 修正點：使用反向地理編碼 API 抓取城市名稱
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(async (pos) => {
-            const { latitude: lat, longitude: lon } = pos.coords;
-            try {
-                // 呼叫免費 API 將經緯度轉為行政區/城市名
-                const geo = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=zh`);
-                const gData = await geo.json();
-                fetchWeather(lat, lon, gData.city || gData.locality || "目前位置");
-            } catch {
-                fetchWeather(lat, lon, "目前位置");
-            }
-        }, () => fetchWeather(34.69, 135.50, "大阪市"));
-    } else { fetchWeather(34.69, 135.50, "大阪市"); }
+async function addExpense() {
+    const payer = document.querySelector('input[name="payer"]:checked').value;
+    const category = document.querySelector('input[name="exp-cat"]:checked').value;
+    const amountInput = document.getElementById('expense-amount').value;
+    const descInput = document.getElementById('expense-desc').value;
+    const amount = parseInt(amountInput);
+    
+    if (!amount || amount <= 0 || !descInput.trim()) { alert("請輸入有效的金額與項目！"); return; }
 
-    updateItineraryPreview();
-    setInterval(updateItineraryPreview, 30000);
+    const newExpense = { 
+        action: "add", id: Date.now(), payer: payer, amount: amount, desc: descInput.trim(), cat: category,
+        date: new Date().toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) 
+    };
 
-    const toggleArea = document.querySelector('.payer-toggle');
-    const slider = document.querySelector('.toggle-slider');
-    if (toggleArea && slider) {
-        let isDragging = false; let startX = 0; let currentTranslate = 0; let maxT = 0;
-        toggleArea.addEventListener('touchstart', e => {
-            isDragging = true; startX = e.touches[0].clientX;
-            maxT = slider.offsetWidth;
-            currentTranslate = document.getElementById('payer-jj').checked ? maxT : 0;
-            slider.style.transition = 'none';
-        }, { passive: true });
-        toggleArea.addEventListener('touchmove', e => {
-            if (!isDragging) return;
-            let moveX = e.touches[0].clientX;
-            let diff = moveX - startX;
-            let finalX = currentTranslate + diff;
-            if (finalX < 0) finalX = 0; if (finalX > maxT) finalX = maxT;
-            slider.style.transform = `translateX(${finalX}px)`;
-            if (Math.abs(diff) > 5) e.preventDefault();
-        }, { passive: false });
-        toggleArea.addEventListener('touchend', e => {
-            isDragging = false;
-            let endX = e.changedTouches[0].clientX;
-            slider.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
-            slider.style.transform = '';
-            if (Math.abs(endX - startX) > 10) {
-                let finalPos = currentTranslate + (endX - startX);
-                if (finalPos > maxT / 2) document.getElementById('payer-jj').checked = true;
-                else document.getElementById('payer-timmy').checked = true;
-            }
-        });
+    expenses.push(newExpense);
+    localStorage.setItem('travelExpenses', JSON.stringify(expenses));
+    renderExpenses();
+    renderCategorySummary();
+    
+    document.getElementById('expense-amount').value = '';
+    document.getElementById('expense-desc').value = '';
+
+    fetch(CLOUD_API_URL, {
+        method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(newExpense)
+    }).catch(e => console.error("雲端上傳失敗", e));
+}
+
+async function deleteExpense(id) {
+    if(confirm("確定要刪除這筆紀錄嗎？")) {
+        expenses = expenses.filter(exp => exp.id != id); 
+        localStorage.setItem('travelExpenses', JSON.stringify(expenses));
+        renderExpenses();
+        renderCategorySummary();
+
+        fetch(CLOUD_API_URL, {
+            method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: "delete", id: id })
+        }).catch(e => console.error("雲端刪除失敗", e));
     }
 }
 
-document.addEventListener('DOMContentLoaded', init);
+function toggleCategorySummary() {
+    const view = document.getElementById('category-summary-view');
+    if (view.style.display === 'none') {
+        renderCategorySummary();
+        view.style.display = 'block';
+    } else { view.style.display = 'none'; }
+}
+
+function renderCategorySummary() {
+    const view = document.getElementById('category-summary-view');
+    let totals = { "餐食": 0, "交通": 0, "購物": 0, "其他": 0 };
+    let grandTotal = 0;
+
+    expenses.forEach(exp => {
+        let cat = exp.cat || "其他"; 
+        if(totals[cat] !== undefined) totals[cat] += parseInt(exp.amount);
+        grandTotal += parseInt(exp.amount);
+    });
+
+    const colors = { "餐食": "#ffcc00", "交通": "#34c759", "購物": "#af52de", "其他": "#8e8e93" };
+    let html = '';
+    for (const [cat, amt] of Object.entries(totals)) {
+        let percentage = grandTotal === 0 ? 0 : Math.round((amt / grandTotal) * 100);
+        html += `<div class="cat-bar-container"><span class="cat-label">${cat}</span><div class="cat-track"><div class="cat-fill" style="width: ${percentage}%; background: ${colors[cat]};"></div></div><span class="cat-amount">¥${amt.toLocaleString()}</span></div>`;
+    }
+    view.innerHTML = html;
+}
+
+function renderExpenses(isLoading = false) {
+    const listContainer = document.getElementById('expense-list');
+    listContainer.innerHTML = '';
+    
+    if (isLoading) { listContainer.innerHTML = '<p style="text-align:center; color:#86868b; font-size:12px; margin-top:20px;">☁️ 雲端同步中...</p>'; return; }
+
+    let timmyTotal = 0; let jjTotal = 0;
+    const reversedExpenses = [...expenses].reverse();
+
+    reversedExpenses.forEach(exp => {
+        if (exp.payer === 'Timmy') { timmyTotal += parseInt(exp.amount); } else { jjTotal += parseInt(exp.amount); }
+        const iconStr = exp.payer === 'Timmy' ? '👦🏻' : '👧🏻';
+        const colorClass = exp.payer === 'Timmy' ? 'color-timmy' : 'color-jj';
+        const catTag = exp.cat ? `<span class="exp-cat-tag">${exp.cat}</span>` : ""; 
+        listContainer.innerHTML += `<div class="exp-item"><div class="exp-item-left"><div class="exp-avatar ${colorClass}">${iconStr}</div><div class="exp-info"><span class="exp-desc">${catTag}${exp.desc}</span><span class="exp-date">${exp.date}</span></div></div><div class="exp-item-right"><span class="exp-price">¥${parseInt(exp.amount).toLocaleString()}</span><div class="exp-delete" onclick="deleteExpense('${exp.id}')">🗑️</div></div></div>`;
+    });
+
+    if(reversedExpenses.length === 0) listContainer.innerHTML = '<p style="text-align:center; color:#86868b; font-size:12px; margin-top:20px;">尚無紀錄，開始記帳吧！</p>';
+
+    const total = timmyTotal + jjTotal;
+    document.getElementById('total-amount').innerText = total.toLocaleString();
+    document.getElementById('timmy-paid').innerText = timmyTotal.toLocaleString();
+    document.getElementById('jj-paid').innerText = jjTotal.toLocaleString();
+
+    const settlementText = document.getElementById('settlement-text');
+    const diff = timmyTotal - jjTotal;
+    const halfDiff = Math.abs(diff) / 2;
+
+    if (diff > 0) {
+        settlementText.innerHTML = `⚠️ <b>ㄐㄐ</b> 需給 Timmy： <b>¥${halfDiff.toLocaleString()}</b>`;
+        settlementText.className = "settlement owe-timmy";
+    } else if (diff < 0) {
+        settlementText.innerHTML = `⚠️ <b>Timmy</b> 需給 ㄐㄐ： <b>¥${halfDiff.toLocaleString()}</b>`;
+        settlementText.className = "settlement owe-jj";
+    } else {
+        settlementText.innerHTML = `✅ 目前帳目完美平衡`;
+        settlementText.className = "settlement balanced";
+    }
+}
