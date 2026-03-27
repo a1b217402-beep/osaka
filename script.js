@@ -27,6 +27,10 @@ function openModal(dayId, event) {
 }
 
 function openCurrentDayPreview(event) {
+    // 🛑 【測試模式】強制點擊預覽時永遠開啟 Day 1
+    let dayNum = 1; 
+
+    /* 💡 測試完成後，請把上面那行刪掉，並把下面這段解開註解：
     const now = new Date();
     const year = now.getFullYear();
     const month = now.getMonth() + 1;
@@ -35,6 +39,7 @@ function openCurrentDayPreview(event) {
     if (year === 2026 && month === 8 && date >= 10 && date <= 17) {
         dayNum = date - 9; 
     }
+    */
     openModal('day' + dayNum, event);
 }
 
@@ -94,7 +99,10 @@ function updateItineraryPreview() {
     const heroNextTime = document.getElementById('preview-next-time');
     const heroNextLabel = document.getElementById('preview-next-label');
 
-    const isTripTime = (year === 2026 && month === 8 && date >= 10 && date <= 17);
+    // 🛑 【測試模式】強制將今天當作旅行期間
+    const isTripTime = true; 
+    // 💡 測試完成後改回： const isTripTime = (year === 2026 && month === 8 && date >= 10 && date <= 17);
+
     document.querySelectorAll('.time-item').forEach(el => el.classList.remove('active'));
 
     const targetDate = new Date(2026, 7, 10); 
@@ -120,7 +128,11 @@ function updateItineraryPreview() {
 
     if(heroNextLabel) heroNextLabel.innerText = "下個時間";
     const currentScore = now.getHours() * 60 + now.getMinutes();
-    const currentDayNum = date - 9; 
+    
+    // 🛑 【測試模式】強制將目前天數指定為 Day 1
+    const currentDayNum = 1; 
+    // 💡 測試完成後改回： const currentDayNum = date - 9; 
+    
     const dayDataId = `content-day${currentDayNum}`;
     const daySection = document.getElementById(dayDataId);
 
@@ -169,7 +181,7 @@ function init() {
 
     updateItineraryPreview();
     setInterval(updateItineraryPreview, 30000);
-    renderPhotoDiary();
+    renderPhotoDiary(); 
 
     const toggleArea = document.querySelector('.payer-toggle');
     const slider = document.querySelector('.toggle-slider');
