@@ -23,23 +23,23 @@ function openModal(dayId, event) {
         void modal.offsetWidth; 
         modal.classList.add('open');
         document.body.style.overflow = 'hidden';
+        
+        // 打開視窗瞬間，立刻觸發一次計算，讓移動的圓點精準定位
+        updateItineraryPreview();
     }
 }
 
 function openCurrentDayPreview(event) {
-    // 🛑 【測試模式】強制點擊預覽時永遠開啟 Day 1
-    let dayNum = 1; 
-
-    /* 💡 測試完成後，請把上面那行刪掉，並把下面這段解開註解：
     const now = new Date();
     const year = now.getFullYear();
     const month = now.getMonth() + 1;
     const date = now.getDate();
     let dayNum = 1;
+    
+    // 正確的日期判定邏輯 (旅程區間: 2026/8/10 ~ 8/17)
     if (year === 2026 && month === 8 && date >= 10 && date <= 17) {
         dayNum = date - 9; 
     }
-    */
     openModal('day' + dayNum, event);
 }
 
@@ -99,11 +99,14 @@ function updateItineraryPreview() {
     const heroNextTime = document.getElementById('preview-next-time');
     const heroNextLabel = document.getElementById('preview-next-label');
 
-    // 🛑 【測試模式】強制將今天當作旅行期間
-    const isTripTime = true; 
-    // 💡 測試完成後改回： const isTripTime = (year === 2026 && month === 8 && date >= 10 && date <= 17);
-
-    document.querySelectorAll('.time-item').forEach(el => el.classList.remove('active'));
+    // 嚴格旅程判定
+    const isTripTime = (year === 2026 && month === 8 && date >= 10 && date <= 17);
+    
+    // 清除所有行程亮點與位移
+    document.querySelectorAll('.time-item').forEach(el => {
+        el.classList.remove('active');
+        el.style.setProperty('--dot-offset', '0px');
+    });
 
     const targetDate = new Date(2026, 7, 10); 
     const diffTime = targetDate - now;
@@ -128,11 +131,7 @@ function updateItineraryPreview() {
 
     if(heroNextLabel) heroNextLabel.innerText = "下個時間";
     const currentScore = now.getHours() * 60 + now.getMinutes();
-    
-    // 🛑 【測試模式】強制將目前天數指定為 Day 1
-    const currentDayNum = 1; 
-    // 💡 測試完成後改回： const currentDayNum = date - 9; 
-    
+    const currentDayNum = date - 9; 
     const dayDataId = `content-day${currentDayNum}`;
     const daySection = document.getElementById(dayDataId);
 
@@ -157,12 +156,33 @@ function updateItineraryPreview() {
         heroNowTime.innerText = currentItem.time; heroNowTitle.innerText = currentItem.title;
         heroNextTitle.innerText = nextItem.title; heroNextTime.innerText = nextItem.time;
 
-        if (items[currentIdx]) items[currentIdx].classList.add('active');
+        // --- 🚀 計算移動閃爍圓點的進度比例 ---
+        let ratio = 0;
+        if (nextItem.time !== "--:--") {
+            const totalMins = nextItem.score - currentItem.score;
+            const elapsedMins = currentScore - currentItem.score;
+            if (totalMins > 0) {
+                ratio = Math.max(0, Math.min(1, elapsedMins / totalMins));
+            }
+        }
+
+        // 把動態位移與閃爍效果應用在【目前開啟的視窗】內的圓點上
         const modal = document.getElementById('itineraryModal');
-        const modalHeader = document.querySelector('#modalBody h2');
-        if (modal.classList.contains('open') && modalHeader && modalHeader.innerText.includes(`Day ${currentDayNum}`)) {
-            const modalItems = document.querySelectorAll('#modalBody .time-item');
-            if (modalItems[currentIdx]) modalItems[currentIdx].classList.add('active');
+        if (modal && modal.classList.contains('open')) {
+            const modalHeader = document.querySelector('#modalBody h2');
+            if (modalHeader && modalHeader.innerText.includes(`Day ${currentDayNum}`)) {
+                const modalItems = document.querySelectorAll('#modalBody .time-item');
+                if (modalItems[currentIdx]) {
+                    modalItems[currentIdx].classList.add('active');
+                    
+                    // 抓取真實排版像素差，算出圓點該滑動多少
+                    let mDistance = 0;
+                    if (modalItems[currentIdx + 1]) {
+                        mDistance = modalItems[currentIdx + 1].offsetTop - modalItems[currentIdx].offsetTop;
+                    }
+                    modalItems[currentIdx].style.setProperty('--dot-offset', (ratio * mDistance) + 'px');
+                }
+            }
         }
     }
 }
@@ -180,8 +200,8 @@ function init() {
     } else { fetchWeather(34.69, 135.50, "大阪市 (預設)"); }
 
     updateItineraryPreview();
-    setInterval(updateItineraryPreview, 30000);
-    renderPhotoDiary(); 
+    setInterval(updateItineraryPreview, 30000); // 每 30 秒平滑推進一次圓點
+    renderPhotoDiary();
 
     const toggleArea = document.querySelector('.payer-toggle');
     const slider = document.querySelector('.toggle-slider');
