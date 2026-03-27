@@ -8,7 +8,7 @@
     --title-font: 'HanaMinA', 'HanaMinB', 'Hanazono Mincho', '花園明朝A', '花園明朝B', 'Noto Serif JP', serif;
 }
 
-/* 🚀 關鍵修改：將 body 與 main 鎖定為 100dvh，杜絕滑動，成為真正的 App 版面 */
+/* 🚀 修正：移除高度鎖定與隱藏溢出，讓頁面恢復自然上下滑動 */
 body { 
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Noto Sans TC", sans-serif;
     margin: 0; padding: 0; color: #1d1d1f; -webkit-font-smoothing: antialiased;
@@ -16,18 +16,7 @@ body {
                 linear-gradient(127deg, var(--c2), rgba(255,255,255,0) 70.71%),
                 linear-gradient(336deg, var(--c3), rgba(255,255,255,0) 70.71%);
     background-size: 200% 200%; animation: liquidBg 15s ease infinite; 
-    
-    height: 100dvh; /* 動態視窗高度 */
-    overflow: hidden; /* 強制不滑動 */
-    display: flex;
-    flex-direction: column;
-}
-
-main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden; /* 內部也不滑動 */
+    background-attachment: fixed; min-height: 100vh; overflow-x: hidden; width: 100%;
 }
 
 @keyframes liquidBg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
@@ -35,7 +24,7 @@ main {
 
 h1, h2, h3, h4, h5, h6, .serif { font-family: var(--title-font) !important; }
 
-/* 確保這些方塊不會被擠壓變形 */
+/* 防止方塊被擠壓變形 */
 header, nav, .weather-widget, .hero, .expense-trigger-section { flex-shrink: 0; }
 
 header { 
@@ -46,7 +35,7 @@ header {
 header h1 { margin: 0; font-size: 24px; }
 .subtitle { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Noto Sans TC", sans-serif !important; font-size: 13px; color: #424245; font-weight: 600; margin-top: 5px; }
 
-/* 統一設定間距為 12px，確保在小螢幕上也能等距呈現 */
+/* 統一主頁面所有方塊的寬度與間距 */
 .nav-container, .weather-widget, .preview-card-content, .trigger-card {
     width: 90% !important; max-width: 400px !important; margin: 0 auto 12px auto !important;
 }
@@ -83,7 +72,6 @@ header h1 { margin: 0; font-size: 24px; }
 .next-time { font-size: 18px; font-weight: 700; color: #1d1d1f; margin-bottom: 3px; }
 .next-label { font-size: 10px; font-weight: 600; }
 
-/* 🚀 新增：觸發方塊通用設計 */
 .trigger-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(30px); padding: 16px 22px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 10px 25px rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: transform 0.2s; }
 .trigger-card:active { transform: scale(0.97); }
 .trig-left { display: flex; align-items: center; gap: 12px; }
@@ -93,15 +81,25 @@ header h1 { margin: 0; font-size: 24px; }
 .trig-sub { font-size: 11px; color: #86868b; font-weight: 600; margin-top: 2px; }
 .trig-right { font-size: 13px; font-weight: 600; color: var(--ios-blue); background: rgba(0, 113, 227, 0.1); padding: 6px 12px; border-radius: 12px; }
 
-/* 🚀 關鍵修改：讓相片方塊填滿剩餘高度 */
-.photo-trigger-section { flex: 1; display: flex; justify-content: center; width: 100%; min-height: 80px; padding-bottom: 5px; }
-.photo-trigger-card { height: 100%; margin-bottom: 0 !important; }
+/* 恢復正常區塊屬性，取消填滿高度 */
+.photo-trigger-section { display: flex; justify-content: center; width: 100%; padding-bottom: 20px; }
 
-/* 彈出視窗 Modal */
+/* =========================================
+   🚀 彈出視窗統一等寬設定
+========================================= */
 .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(5px); opacity: 0; transition: opacity 0.3s; }
 .modal.open { opacity: 1; display: flex !important; justify-content: center; align-items: center; }
-.modal-content { background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(40px); padding: 35px 20px 25px 20px; max-height: 80vh; overflow-y: auto; border-radius: 35px; box-shadow: 0 30px 60px rgba(0,0,0,0.15); transform: scale(0.05); opacity: 0; position: relative; }
+
+/* 關鍵修正：確保所有 Modal 與主頁方塊 100% 對齊等寬 (90%, max 400px) */
+.modal-content { 
+    width: 90% !important; max-width: 400px !important; margin: 0 auto !important; 
+    background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(40px); 
+    padding: 35px 20px 25px 20px; max-height: 80vh; overflow-y: auto; 
+    border-radius: 35px; box-shadow: 0 30px 60px rgba(0,0,0,0.15); 
+    transform: scale(0.05); opacity: 0; position: relative; 
+}
 .modal.open .modal-content { transform: scale(1); opacity: 1; transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s; }
+
 .close-btn { position: absolute; right: 15px; top: 15px; width: 34px; height: 34px; background: #ffffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 400; line-height: 1; padding-bottom: 2px; cursor: pointer; color: #86868b; z-index: 9999; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); transition: transform 0.2s ease, box-shadow 0.2s ease; }
 .close-btn:hover { transform: scale(1.05); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2); }
 
@@ -194,7 +192,7 @@ header h1 { margin: 0; font-size: 24px; }
 .cat-amount { width: 55px; text-align: right; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; }
 .exp-cat-tag { font-size: 10px; background: #f2f2f7; padding: 2px 6px; border-radius: 6px; margin-right: 6px; color: #8e8e93; }
 
-/* 📷 旅程回憶錄 (改為 Modal 內 2 列網格) */
+/* 📷 旅程回憶錄 (Modal 內 2 列網格) */
 .photo-diary-modal-content { background: #f2f2f7; }
 .photo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding-bottom: 15px; }
 
