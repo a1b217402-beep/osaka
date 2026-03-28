@@ -4,6 +4,8 @@ function setModalOrigin(event) {
     const target = event ? event.currentTarget : currentActiveButton;
     if (!target) return;
     const modalContent = document.querySelector('.modal.open .modal-content') || document.querySelector('.modal-content');
+    if (!modalContent) return;
+    
     const btnRect = target.getBoundingClientRect();
     const layoutLeft = (window.innerWidth - modalContent.offsetWidth) / 2;
     const layoutTop = (window.innerHeight - modalContent.offsetHeight) / 2;
@@ -23,6 +25,7 @@ function openModal(dayId, event) {
         setModalOrigin(event);
         void modal.offsetWidth; 
         modal.classList.add('open');
+        document.body.style.overflow = 'hidden';
         updateItineraryPreview();
     }
 }
@@ -33,6 +36,8 @@ function openCurrentDayPreview(event) {
     const month = now.getMonth() + 1;
     const date = now.getDate();
     let dayNum = 1;
+    
+    // 正確的旅程時間判定 2026/8/10 ~ 2026/8/17
     if (year === 2026 && month === 8 && date >= 10 && date <= 17) {
         dayNum = date - 9; 
     }
@@ -49,7 +54,8 @@ function closeModal() {
                 modal.style.display = 'none';
                 currentActiveButton = null;
             }
-        }, 400); 
+        }, 300); 
+        document.body.style.overflow = '';
     }
 }
 
@@ -141,14 +147,23 @@ function updateItineraryPreview() {
 
     let currentIdx = itinerary.findLastIndex(item => currentScore >= item.score);
     
-    if (currentIdx === -1) {
-        heroNowTime.innerText = "晨間"; heroNowTitle.innerText = "準備出門";
-        heroNextTitle.innerText = itinerary[0].title; heroNextTime.innerText = itinerary[0].time;
+    if (itinerary.length === 0) {
+        if(heroNowTime) heroNowTime.innerText = "--:--"; 
+        if(heroNowTitle) heroNowTitle.innerText = "自由活動";
+        if(heroNextTitle) heroNextTitle.innerText = "探索城市"; 
+        if(heroNextTime) heroNextTime.innerText = "--:--";
+    } else if (currentIdx === -1) {
+        if(heroNowTime) heroNowTime.innerText = "晨間"; 
+        if(heroNowTitle) heroNowTitle.innerText = "準備出門";
+        if(heroNextTitle) heroNextTitle.innerText = itinerary[0].title; 
+        if(heroNextTime) heroNextTime.innerText = itinerary[0].time;
     } else {
         const currentItem = itinerary[currentIdx];
         const nextItem = itinerary[currentIdx + 1] || { time: "--:--", title: "行程結束" };
-        heroNowTime.innerText = currentItem.time; heroNowTitle.innerText = currentItem.title;
-        heroNextTitle.innerText = nextItem.title; heroNextTime.innerText = nextItem.time;
+        if(heroNowTime) heroNowTime.innerText = currentItem.time; 
+        if(heroNowTitle) heroNowTitle.innerText = currentItem.title;
+        if(heroNextTitle) heroNextTitle.innerText = nextItem.title; 
+        if(heroNextTime) heroNextTime.innerText = nextItem.time;
 
         let ratio = 0;
         if (nextItem.time !== "--:--") {
@@ -198,8 +213,10 @@ function init() {
     
     if (toggleArea && slider) {
         let isDragging = false; let startX = 0; let currentTranslate = 0; let maxTranslate = 0;
+        
         toggleArea.addEventListener('touchstart', e => {
-            isDragging = true; startX = e.changedTouches[0].clientX;
+            isDragging = true; 
+            startX = e.changedTouches[0].clientX;
             maxTranslate = slider.offsetWidth;
             const radioJJ = document.getElementById('payer-jj');
             currentTranslate = radioJJ.checked ? maxTranslate : 0;
@@ -221,14 +238,31 @@ function init() {
             if (!isDragging) return;
             isDragging = false;
             let diff = e.changedTouches[0].clientX - startX;
-            slider.style.transition = ''; slider.style.transform = '';
+            slider.style.transition = ''; 
+            slider.style.transform = '';
             if (Math.abs(diff) > 5) {
                 let finalTranslate = currentTranslate + diff;
-                if (finalTranslate > maxTranslate / 2) { document.getElementById('payer-jj').checked = true; } 
-                else { document.getElementById('payer-timmy').checked = true; }
+                if (finalTranslate > maxTranslate / 2) { 
+                    document.getElementById('payer-jj').checked = true; 
+                } else { 
+                    document.getElementById('payer-timmy').checked = true; 
+                }
             }
         });
     }
+
+    // 🚀 全新修正：綁定所有 Modal 的點擊事件，讓點擊視窗外緣（空白處）完美關閉視窗
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', function(event) {
+            // 確保點擊到的是背景 (modal 本身)，而不是白色的視窗內容 (modal-content)
+            if (event.target === this) {
+                if (this.id === 'itineraryModal') closeModal();
+                else if (this.id === 'expenseModal') closeExpenseModal();
+                else if (this.id === 'photoDiaryModal') closePhotoDiaryModal();
+                else if (this.id === 'photoViewerModal') closePhotoViewer();
+            }
+        });
+    });
 }
 
 document.addEventListener('DOMContentLoaded', init);
@@ -247,6 +281,8 @@ function openPhotoDiaryModal(event) {
     setModalOrigin(event);
     void modal.offsetWidth;
     modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    renderPhotoDiary();
 }
 
 function closePhotoDiaryModal() {
@@ -259,20 +295,34 @@ function closePhotoDiaryModal() {
                 modal.style.display = 'none';
                 currentActiveButton = null;
             }
-        }, 400);
+        }, 300);
+        document.body.style.overflow = '';
     }
 }
 
 function renderPhotoDiary() {
-    const grid = document.getElementById('photo-grid');
+    const grid = document.querySelector('#photoDiaryModal #photo-grid');
+    if (!grid) return;
     grid.innerHTML = '';
     
     for (let i = 1; i <= 8; i++) {
         const hasPhoto = !!travelPhotos[`day${i}`];
         if (hasPhoto) {
-            grid.innerHTML += `<div class="photo-card" onclick="viewPhoto(${i})"><div class="photo-card-inner"><img src="${travelPhotos[`day${i}`]}" alt="Day ${i}"><div class="photo-overlay-label">Day ${i}</div></div></div>`;
+            grid.innerHTML += `
+                <div class="photo-card" onclick="viewPhoto(${i})">
+                    <div class="photo-card-inner">
+                        <img src="${travelPhotos[`day${i}`]}" alt="Day ${i}">
+                        <div class="photo-overlay-label">Day ${i}</div>
+                    </div>
+                </div>`;
         } else {
-            grid.innerHTML += `<div class="photo-card" onclick="triggerUpload(${i})"><div class="photo-card-inner empty"><span class="photo-add-icon">➕</span><span class="photo-day-label">Day ${i}</span></div></div>`;
+            grid.innerHTML += `
+                <div class="photo-card" onclick="triggerUpload(${i})">
+                    <div class="photo-card-inner empty">
+                        <span class="photo-add-icon">➕</span>
+                        <span class="photo-day-label">Day ${i}</span>
+                    </div>
+                </div>`;
         }
     }
 }
@@ -342,6 +392,7 @@ function openExpenseModal(event) {
     setModalOrigin(event);
     void modal.offsetWidth;
     modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
     renderExpenses(expenses.length === 0); 
     syncFromCloud();
 }
@@ -356,21 +407,10 @@ function closeExpenseModal() {
                 modal.style.display = 'none';
                 currentActiveButton = null;
             }
-        }, 400);
+        }, 300);
+        document.body.style.overflow = '';
     }
 }
-
-window.onclick = function(event) {
-    const itModal = document.getElementById('itineraryModal');
-    const expModal = document.getElementById('expenseModal');
-    const diaryModal = document.getElementById('photoDiaryModal');
-    const photoModal = document.getElementById('photoViewerModal');
-    
-    if (event.target === itModal) closeModal();
-    if (event.target === expModal) closeExpenseModal();
-    if (event.target === diaryModal) closePhotoDiaryModal();
-    if (event.target === photoModal) closePhotoViewer();
-};
 
 async function syncFromCloud() {
     try {
@@ -395,7 +435,12 @@ async function addExpense() {
     if (!amount || amount <= 0 || !descInput.trim()) { alert("請輸入有效的金額與項目！"); return; }
 
     const newExpense = { 
-        action: "add", id: Date.now(), payer: payer, amount: amount, desc: descInput.trim(), cat: category,
+        action: "add", 
+        id: Date.now(), 
+        payer: payer, 
+        amount: amount, 
+        desc: descInput.trim(), 
+        cat: category,
         date: new Date().toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) 
     };
 
@@ -408,7 +453,9 @@ async function addExpense() {
     document.getElementById('expense-desc').value = '';
 
     fetch(CLOUD_API_URL, {
-        method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(newExpense)
+        method: 'POST', 
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+        body: JSON.stringify(newExpense)
     }).catch(e => console.error("雲端上傳失敗", e));
 }
 
@@ -420,7 +467,9 @@ async function deleteExpense(id) {
         renderCategorySummary();
 
         fetch(CLOUD_API_URL, {
-            method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: "delete", id: id })
+            method: 'POST', 
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+            body: JSON.stringify({ action: "delete", id: id })
         }).catch(e => console.error("雲端刪除失敗", e));
     }
 }
@@ -430,7 +479,9 @@ function toggleCategorySummary() {
     if (view.style.display === 'none') {
         renderCategorySummary();
         view.style.display = 'block';
-    } else { view.style.display = 'none'; }
+    } else { 
+        view.style.display = 'none'; 
+    }
 }
 
 function renderCategorySummary() {
@@ -448,7 +499,14 @@ function renderCategorySummary() {
     let html = '';
     for (const [cat, amt] of Object.entries(totals)) {
         let percentage = grandTotal === 0 ? 0 : Math.round((amt / grandTotal) * 100);
-        html += `<div class="cat-bar-container"><span class="cat-label">${cat}</span><div class="cat-track"><div class="cat-fill" style="width: ${percentage}%; background: ${colors[cat]};"></div></div><span class="cat-amount">¥${amt.toLocaleString()}</span></div>`;
+        html += `
+            <div class="cat-bar-container">
+                <span class="cat-label">${cat}</span>
+                <div class="cat-track">
+                    <div class="cat-fill" style="width: ${percentage}%; background: ${colors[cat]};"></div>
+                </div>
+                <span class="cat-amount">¥${amt.toLocaleString()}</span>
+            </div>`;
     }
     view.innerHTML = html;
 }
@@ -457,20 +515,44 @@ function renderExpenses(isLoading = false) {
     const listContainer = document.getElementById('expense-list');
     listContainer.innerHTML = '';
     
-    if (isLoading) { listContainer.innerHTML = '<p style="text-align:center; color:#86868b; font-size:12px; margin-top:20px;">☁️ 雲端同步中...</p>'; return; }
+    if (isLoading) { 
+        listContainer.innerHTML = '<p style="text-align:center; color:#86868b; font-size:12px; margin-top:20px;">☁️ 雲端同步中...</p>'; 
+        return; 
+    }
 
     let timmyTotal = 0; let jjTotal = 0;
     const reversedExpenses = [...expenses].reverse();
 
     reversedExpenses.forEach(exp => {
-        if (exp.payer === 'Timmy') { timmyTotal += parseInt(exp.amount); } else { jjTotal += parseInt(exp.amount); }
+        if (exp.payer === 'Timmy') { 
+            timmyTotal += parseInt(exp.amount); 
+        } else { 
+            jjTotal += parseInt(exp.amount); 
+        }
+        
         const iconStr = exp.payer === 'Timmy' ? '👦🏻' : '👧🏻';
         const colorClass = exp.payer === 'Timmy' ? 'color-timmy' : 'color-jj';
         const catTag = exp.cat ? `<span class="exp-cat-tag">${exp.cat}</span>` : ""; 
-        listContainer.innerHTML += `<div class="exp-item"><div class="exp-item-left"><div class="exp-avatar ${colorClass}">${iconStr}</div><div class="exp-info"><span class="exp-desc">${catTag}${exp.desc}</span><span class="exp-date">${exp.date}</span></div></div><div class="exp-item-right"><span class="exp-price">¥${parseInt(exp.amount).toLocaleString()}</span><div class="exp-delete" onclick="deleteExpense('${exp.id}')">🗑️</div></div></div>`;
+        
+        listContainer.innerHTML += `
+            <div class="exp-item">
+                <div class="exp-item-left">
+                    <div class="exp-avatar ${colorClass}">${iconStr}</div>
+                    <div class="exp-info">
+                        <span class="exp-desc">${catTag}${exp.desc}</span>
+                        <span class="exp-date">${exp.date}</span>
+                    </div>
+                </div>
+                <div class="exp-item-right">
+                    <span class="exp-price">¥${parseInt(exp.amount).toLocaleString()}</span>
+                    <div class="exp-delete" onclick="deleteExpense('${exp.id}')">🗑️</div>
+                </div>
+            </div>`;
     });
 
-    if(reversedExpenses.length === 0) listContainer.innerHTML = '<p style="text-align:center; color:#86868b; font-size:12px; margin-top:20px;">尚無紀錄，開始記帳吧！</p>';
+    if(reversedExpenses.length === 0) {
+        listContainer.innerHTML = '<p style="text-align:center; color:#86868b; font-size:12px; margin-top:20px;">尚無紀錄，開始記帳吧！</p>';
+    }
 
     const total = timmyTotal + jjTotal;
     document.getElementById('total-amount').innerText = total.toLocaleString();
