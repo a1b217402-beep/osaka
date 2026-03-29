@@ -1,291 +1,612 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@600;700&family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap');
+let currentActiveButton = null;
 
-*, *::before, *::after { 
-    box-sizing: border-box; 
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-view').forEach(view => {
+        view.classList.remove('active');
+    });
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    document.getElementById('view-' + tabId).classList.add('active');
+    document.getElementById('btn-' + tabId).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-:root {
-    --ios-blue: #0071e3;
-    --c1: #ff9a9e; 
-    --c2: #fad0c4; 
-    --c3: #a1c4fd;
-    --title-font: 'HanaMinA', 'HanaMinB', 'Hanazono Mincho', '花園明朝A', '花園明朝B', 'Noto Serif JP', serif;
+function setModalOrigin(event) {
+    const target = event ? event.currentTarget : currentActiveButton;
+    if (!target) return;
+    const modalContent = document.querySelector('.modal.open .modal-content') || document.querySelector('.modal-content');
+    if (!modalContent) return;
+    
+    const btnRect = target.getBoundingClientRect();
+    const layoutLeft = (window.innerWidth - modalContent.offsetWidth) / 2;
+    const layoutTop = (window.innerHeight - modalContent.offsetHeight) / 2;
+    const originX = btnRect.left + (btnRect.width / 2) - layoutLeft;
+    const originY = btnRect.top + (btnRect.height / 2) - layoutTop;
+    modalContent.style.transformOrigin = `${originX}px ${originY}px`;
 }
 
-body { 
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Noto Sans TC", sans-serif;
-    margin: 0; 
-    padding: 0; 
-    color: #1d1d1f; 
-    -webkit-font-smoothing: antialiased;
-    background: linear-gradient(217deg, var(--c1), rgba(255,255,255,0) 70.71%),
-                linear-gradient(127deg, var(--c2), rgba(255,255,255,0) 70.71%),
-                linear-gradient(336deg, var(--c3), rgba(255,255,255,0) 70.71%);
-    background-size: 200% 200%; 
-    animation: liquidBg 15s ease infinite; 
-    background-attachment: fixed; 
-    min-height: 100vh; 
-    width: 100%;
+function openModal(dayId, event) {
+    const modal = document.getElementById('itineraryModal');
+    const modalBody = document.getElementById('modalBody');
+    const sourceContent = document.getElementById('content-' + dayId);
+    if (modal && sourceContent && event) {
+        currentActiveButton = event.currentTarget;
+        modalBody.innerHTML = sourceContent.innerHTML;
+        modal.style.display = 'flex';
+        setModalOrigin(event);
+        void modal.offsetWidth; 
+        modal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        updateItineraryPreview();
+    }
 }
 
-@keyframes liquidBg { 
-    0% { background-position: 0% 50%; } 
-    50% { background-position: 100% 50%; } 
-    100% { background-position: 0% 50%; } 
+function openCurrentDayPreview(event) {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    const date = now.getDate();
+    let dayNum = 1;
+    
+    if (year === 2026 && month === 8 && date >= 10 && date <= 17) {
+        dayNum = date - 9; 
+    }
+    openModal('day' + dayNum, event);
 }
 
-@keyframes fadeUp { 
-    from { opacity: 0; transform: translateY(20px); } 
-    to { opacity: 1; transform: translateY(0); } 
+function closeModal() {
+    const modal = document.getElementById('itineraryModal');
+    if (modal) {
+        modal.classList.remove('open');
+        setTimeout(() => {
+            if (!modal.classList.contains('open')) {
+                modal.style.display = 'none';
+                currentActiveButton = null;
+            }
+        }, 300); 
+        document.body.style.overflow = '';
+    }
 }
 
-h1, h2, h3, h4, h5, h6, .serif { 
-    font-family: var(--title-font) !important; 
+function getWeatherEmoji(code) {
+    // 解決方形亂碼：起霧代碼統一用雲朵代替
+    const table = { 0: "☀️", 1: "⛅", 2: "⛅", 3: "☁️", 45: "☁️", 48: "☁️", 51: "🌧️", 61: "🌧️", 95: "⛈️" };
+    return table[code] || "🌤️";
 }
 
-header { 
-    background: rgba(255, 255, 255, 0.4); 
-    backdrop-filter: blur(25px); 
-    -webkit-backdrop-filter: blur(25px);
-    padding-top: max(20px, env(safe-area-inset-top)); 
-    padding-bottom: 12px; 
-    text-align: center; 
-    position: relative; 
-    z-index: 100;
+async function fetchWeather(lat, lon, cityName) {
+    const hourlyContainer = document.getElementById('hourly-forecast');
+    const titleDesc = document.getElementById('current-weather-desc');
+    const locationName = document.getElementById('location-name');
+    try {
+        locationName.innerHTML = `📍 ${cityName}`;
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,weathercode,precipitation_probability&timezone=auto&forecast_days=2`);
+        const data = await res.json();
+        titleDesc.innerHTML = `${getWeatherEmoji(data.current_weather.weathercode)} ${Math.round(data.current_weather.temperature)}°C`;
+
+        const nowHour = new Date().getHours();
+        let startIndex = data.hourly.time.findIndex(t => parseInt(t.substring(11, 13)) === nowHour);
+        if (startIndex === -1) startIndex = 0;
+
+        let html = '';
+        for (let i = startIndex; i < startIndex + 24; i++) {
+            if (!data.hourly.time[i]) break;
+            const label = (i === startIndex) ? "現在" : data.hourly.time[i].substring(11, 16);
+            const precip = data.hourly.precipitation_probability[i] || 0;
+            html += `<div class="hourly-item"><span class="h-time serif">${label}</span><span class="h-icon">${getWeatherEmoji(data.hourly.weathercode[i])}</span><span class="h-temp serif">${Math.round(data.hourly.temperature_2m[i])}°</span><span class="h-precip">${precip}%</span></div>`;
+        }
+        hourlyContainer.innerHTML = html;
+    } catch (e) { titleDesc.innerHTML = "同步中"; }
 }
 
-header h1 { margin: 0; font-size: 24px; }
-.subtitle { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Noto Sans TC", sans-serif !important; font-size: 13px; color: #424245; font-weight: 600; margin-top: 5px; }
+function updateItineraryPreview() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    const date = now.getDate();
 
-/* 🚀 導覽列分頁切換 */
-.tab-view { display: none; animation: fadeUp 0.3s ease-out forwards; }
-.tab-view.active { display: block; }
+    const heroNowTime = document.getElementById('preview-now-time');
+    const heroNowTitle = document.getElementById('preview-now-title');
+    const heroNextTitle = document.getElementById('preview-next-title');
+    const heroNextTime = document.getElementById('preview-next-time');
+    const heroNextLabel = document.getElementById('preview-next-label');
 
-/* 🚀 寬度等距對齊設定 (90% / max 400px) */
-.layout-width {
-    width: 90% !important; 
-    max-width: 400px !important; 
-    margin-left: auto !important; 
-    margin-right: auto !important;
+    const isTripTime = (year === 2026 && month === 8 && date >= 10 && date <= 17);
+    
+    document.querySelectorAll('.time-item').forEach(el => {
+        el.classList.remove('active');
+        el.style.setProperty('--dot-offset', '0px');
+    });
+
+    const targetDate = new Date(2026, 7, 10); 
+    const diffTime = targetDate - now;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (!isTripTime) {
+        if (diffDays > 0) {
+            if(heroNowTime) heroNowTime.innerText = "⏳";
+            if(heroNowTitle) heroNowTitle.innerText = "期待出發";
+            if(heroNextTitle) heroNextTitle.innerText = "大阪京都行";
+            if(heroNextTime) heroNextTime.innerText = `${diffDays} 天`;
+            if(heroNextLabel) heroNextLabel.innerText = "距離出發";
+        } else {
+            if(heroNowTime) heroNowTime.innerText = "🏠";
+            if(heroNowTitle) heroNowTitle.innerText = "旅途結束";
+            if(heroNextTitle) heroNextTitle.innerText = "整理滿滿回憶";
+            if(heroNextTime) heroNextTime.innerText = "End";
+            if(heroNextLabel) heroNextLabel.innerText = "下個時間";
+        }
+        return; 
+    }
+
+    if(heroNextLabel) heroNextLabel.innerText = "下個時間";
+    const currentScore = now.getHours() * 60 + now.getMinutes();
+    const currentDayNum = date - 9; 
+    const dayDataId = `content-day${currentDayNum}`;
+    const daySection = document.getElementById(dayDataId);
+
+    if (!daySection) return;
+
+    const items = Array.from(daySection.querySelectorAll('.time-item'));
+    const itinerary = items.map(el => {
+        const [h, m] = el.getAttribute('data-time').split(':').map(Number);
+        const titleEl = el.querySelector('.item-title');
+        const itemTitle = titleEl ? titleEl.innerText : el.querySelector('span:last-child').innerText;
+        return { time: el.getAttribute('data-time'), score: h * 60 + m, title: itemTitle };
+    });
+
+    let currentIdx = itinerary.findLastIndex(item => currentScore >= item.score);
+    
+    if (itinerary.length === 0) {
+        if(heroNowTime) heroNowTime.innerText = "--:--"; 
+        if(heroNowTitle) heroNowTitle.innerText = "自由活動";
+        if(heroNextTitle) heroNextTitle.innerText = "探索城市"; 
+        if(heroNextTime) heroNextTime.innerText = "--:--";
+    } else if (currentIdx === -1) {
+        if(heroNowTime) heroNowTime.innerText = "晨間"; 
+        if(heroNowTitle) heroNowTitle.innerText = "準備出門";
+        if(heroNextTitle) heroNextTitle.innerText = itinerary[0].title; 
+        if(heroNextTime) heroNextTime.innerText = itinerary[0].time;
+    } else {
+        const currentItem = itinerary[currentIdx];
+        const nextItem = itinerary[currentIdx + 1] || { time: "--:--", title: "行程結束" };
+        if(heroNowTime) heroNowTime.innerText = currentItem.time; 
+        if(heroNowTitle) heroNowTitle.innerText = currentItem.title;
+        if(heroNextTitle) heroNextTitle.innerText = nextItem.title; 
+        if(heroNextTime) heroNextTime.innerText = nextItem.time;
+
+        let ratio = 0;
+        if (nextItem.time !== "--:--") {
+            const totalMins = nextItem.score - currentItem.score;
+            const elapsedMins = currentScore - currentItem.score;
+            if (totalMins > 0) {
+                ratio = Math.max(0, Math.min(1, elapsedMins / totalMins));
+            }
+        }
+
+        const modal = document.getElementById('itineraryModal');
+        if (modal && modal.classList.contains('open')) {
+            const modalHeader = document.querySelector('#modalBody h2');
+            if (modalHeader && modalHeader.innerText.includes(`Day ${currentDayNum}`)) {
+                const modalItems = document.querySelectorAll('#modalBody .time-item');
+                if (modalItems[currentIdx]) {
+                    modalItems[currentIdx].classList.add('active');
+                    let mDistance = 0;
+                    if (modalItems[currentIdx + 1]) {
+                        mDistance = modalItems[currentIdx + 1].offsetTop - modalItems[currentIdx].offsetTop;
+                    }
+                    modalItems[currentIdx].style.setProperty('--dot-offset', (ratio * mDistance) + 'px');
+                }
+            }
+        }
+    }
 }
 
-/* 區塊間距 */
-.nav-container { margin-bottom: 15px !important; margin-top: 15px !important; }
-.weather-widget { margin-bottom: 15px !important; }
-.hero { margin-bottom: 15px !important; padding: 0; display: block; width: 100%; }
-.expense-trigger-section { margin-bottom: 15px !important; padding: 0; display: block; width: 100%; }
-.photo-trigger-section { margin-bottom: 30px !important; padding: 0; display: block; width: 100%; }
+function init() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            const { latitude: lat, longitude: lon } = pos.coords;
+            try {
+                const geo = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=zh`);
+                const gData = await geo.json();
+                
+                let cityStr = gData.city || gData.principalSubdivision || "";
+                let localityStr = gData.locality || "";
+                let displayName = "目前位置";
+                
+                if (cityStr && localityStr && cityStr !== localityStr) {
+                    displayName = `${cityStr} ${localityStr}`;
+                } else if (cityStr || localityStr) {
+                    displayName = cityStr || localityStr;
+                }
+                
+                fetchWeather(lat, lon, displayName);
+            } catch { 
+                fetchWeather(lat, lon, "目前位置"); 
+            }
+        }, () => fetchWeather(34.666, 135.500, "大阪市 中央區 (預設)")); 
+    } else { 
+        fetchWeather(34.666, 135.500, "大阪市 中央區 (預設)"); 
+    }
 
-.weather-widget, .hero, .expense-trigger-section, .photo-trigger-section { animation: fadeUp 0.8s ease-out forwards; }
+    syncFromCloud();
+    renderExpenses(expenses.length === 0);
 
-.nav-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-.nav-btn { background: rgba(255, 255, 255, 0.85); border: 1px solid rgba(255,255,255,0.5); padding: 12px 0; border-radius: 15px; font-weight: 600; font-size: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+    updateItineraryPreview();
+    setInterval(updateItineraryPreview, 30000); 
 
-/* 天氣小工具 */
-.weather-widget { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); border-radius: 25px; padding: 18px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-.weather-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 8px;}
-.city-name { margin: 0; font-size: 18px; }
-.weather-subtitle { font-size: 11px; color: #1d1d1f; opacity: 0.5; display: block; margin-top: 4px; font-weight: 500; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Noto Sans TC", sans-serif !important; }
-.weather-right h3 { margin: 0; font-size: 18px; font-weight: 700; }
-.hourly-forecast { display: flex; overflow-x: auto; gap: 18px; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
-.hourly-forecast::-webkit-scrollbar { display: none; }
-.hourly-item { display: flex; flex-direction: column; align-items: center; min-width: 40px; }
-.hourly-item .h-time { font-size: 11px; color: #86868b; margin-bottom: 6px; }
-.hourly-item .h-icon { font-size: 20px; margin-bottom: 6px; }
-.hourly-item .h-temp { font-size: 15px; font-weight: 700; }
-.hourly-item .h-precip { font-size: 10px; color: var(--ios-blue); font-weight: 600; margin-top: 2px; }
+    const toggleArea = document.querySelector('.payer-toggle');
+    const slider = document.querySelector('.toggle-slider');
+    
+    if (toggleArea && slider) {
+        let isDragging = false; let startX = 0; let currentTranslate = 0; let maxTranslate = 0;
+        
+        toggleArea.addEventListener('touchstart', e => {
+            isDragging = true; 
+            startX = e.changedTouches[0].clientX;
+            maxTranslate = slider.offsetWidth;
+            const radioJJ = document.getElementById('payer-jj');
+            currentTranslate = radioJJ.checked ? maxTranslate : 0;
+            slider.style.transition = 'none';
+        }, { passive: true });
+        
+        toggleArea.addEventListener('touchmove', e => {
+            if (!isDragging) return;
+            let currentX = e.changedTouches[0].clientX;
+            let diff = currentX - startX;
+            let newTranslate = currentTranslate + diff;
+            if (newTranslate < 0) newTranslate = 0;
+            if (newTranslate > maxTranslate) newTranslate = maxTranslate;
+            slider.style.transform = `translateX(${newTranslate}px)`;
+            if (Math.abs(diff) > 5 && e.cancelable) e.preventDefault();
+        }, { passive: false });
+        
+        toggleArea.addEventListener('touchend', e => {
+            if (!isDragging) return;
+            isDragging = false;
+            let diff = e.changedTouches[0].clientX - startX;
+            slider.style.transition = ''; 
+            slider.style.transform = '';
+            if (Math.abs(diff) > 5) {
+                let finalTranslate = currentTranslate + diff;
+                if (finalTranslate > maxTranslate / 2) { 
+                    document.getElementById('payer-jj').checked = true; 
+                } else { 
+                    document.getElementById('payer-timmy').checked = true; 
+                }
+            }
+        });
+    }
 
-/* 看板卡片 */
-.preview-card-content { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(30px); padding: 20px 22px; border-radius: 28px; border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 15px 35px rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
-.preview-middle { flex: 1; display: flex; flex-direction: column; padding-right: 15px; border-right: 1px solid rgba(0,0,0,0.05); }
-.current-time { font-size: 32px; font-weight: 700; line-height: 1.1; margin-bottom: 4px; }
-.activity-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
-.next-activity-row { display: flex; align-items: center; font-size: 11px; color: #86868b; font-weight: 600; }
-.next-activity-arrow { margin-right: 5px; }
-.preview-right { display: flex; flex-direction: column; align-items: center; width: 85px; color: #86868b; padding-left: 10px; }
-.clock-icon { font-size: 18px; margin-bottom: 6px; }
-.next-time { font-size: 18px; font-weight: 700; color: #1d1d1f; margin-bottom: 3px; }
-.next-label { font-size: 10px; font-weight: 600; }
-
-/* 入口觸發按鈕 */
-.trigger-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(30px); padding: 16px 22px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 10px 25px rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: transform 0.2s; }
-.trigger-card:active { transform: scale(0.97); }
-.trig-left { display: flex; align-items: center; gap: 12px; }
-.trig-icon { font-size: 26px; background: #f2f2f7; padding: 10px; border-radius: 50%; }
-.trig-text { display: flex; flex-direction: column; }
-.trig-title { font-size: 16px; font-weight: 700; color: #1d1d1f; }
-.trig-sub { font-size: 11px; color: #86868b; font-weight: 600; margin-top: 2px; }
-.trig-right { font-size: 13px; font-weight: 600; color: var(--ios-blue); background: rgba(0, 113, 227, 0.1); padding: 6px 12px; border-radius: 12px; }
-
-/* 🚀 底部懸浮膠囊導覽列 */
-.bottom-tab-bar {
-    position: fixed;
-    bottom: max(25px, env(safe-area-inset-bottom));
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
-    border-radius: 35px;
-    display: flex;
-    padding: 6px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
-    z-index: 1000;
-    width: 85%;
-    max-width: 350px;
-    justify-content: space-between;
+    // 🚀 背景點擊關閉視窗，確保 100% 攔截點擊
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', function(event) {
+            // 如果點擊的是黑色的背景遮罩，就關閉當下視窗
+            if (event.target === this) {
+                if (this.id === 'itineraryModal') closeModal();
+                else if (this.id === 'expenseModal') closeExpenseModal();
+                else if (this.id === 'photoDiaryModal') closePhotoDiaryModal();
+                else if (this.id === 'photoViewerModal') closePhotoViewer();
+            }
+        });
+    });
 }
 
-.tab-btn {
-    flex: 1;
-    background: transparent;
-    border: none;
-    padding: 10px 0;
-    border-radius: 30px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    cursor: pointer;
-    transition: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    color: #8e8e93;
-    -webkit-tap-highlight-color: transparent;
+document.addEventListener('DOMContentLoaded', init);
+
+/* =========================================
+   📷 旅程回憶錄邏輯
+========================================= */
+let travelPhotos = JSON.parse(localStorage.getItem('travelPhotos')) || {};
+let currentUploadDay = 1;
+let currentViewDay = null; 
+
+function openPhotoDiaryModal(event) {
+    currentActiveButton = event.currentTarget;
+    const modal = document.getElementById('photoDiaryModal');
+    modal.style.display = 'flex';
+    setModalOrigin(event);
+    void modal.offsetWidth;
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    renderPhotoDiary();
 }
 
-.tab-btn.active {
-    background: rgba(0, 0, 0, 0.05);
-    color: #1d1d1f;
+function closePhotoDiaryModal() {
+    const modal = document.getElementById('photoDiaryModal');
+    if (modal) {
+        setModalOrigin();
+        modal.classList.remove('open');
+        setTimeout(() => {
+            if (!modal.classList.contains('open')) {
+                modal.style.display = 'none';
+                currentActiveButton = null;
+            }
+        }, 300);
+        document.body.style.overflow = '';
+    }
 }
 
-.tab-icon { font-size: 22px; line-height: 1; }
-.tab-label { font-size: 11px; font-weight: 700; line-height: 1; }
-
-/* 🚀 彈出視窗基礎設定 (65vh 縮短比例，背景點擊屬性) */
-.modal { 
-    display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; 
-    background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(5px); opacity: 0; transition: opacity 0.3s; 
-    align-items: center; justify-content: center; cursor: pointer; 
+function renderPhotoDiary() {
+    const grid = document.querySelector('#photoDiaryModal #photo-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    
+    for (let i = 1; i <= 8; i++) {
+        const hasPhoto = !!travelPhotos[`day${i}`];
+        if (hasPhoto) {
+            grid.innerHTML += `
+                <div class="photo-card" onclick="viewPhoto(${i})">
+                    <div class="photo-card-inner">
+                        <img src="${travelPhotos[`day${i}`]}" alt="Day ${i}">
+                        <div class="photo-overlay-label">Day ${i}</div>
+                    </div>
+                </div>`;
+        } else {
+            grid.innerHTML += `
+                <div class="photo-card" onclick="triggerUpload(${i})">
+                    <div class="photo-card-inner empty">
+                        <span class="photo-add-icon">➕</span>
+                        <span class="photo-day-label">Day ${i}</span>
+                    </div>
+                </div>`;
+        }
+    }
 }
-.modal.open { opacity: 1; display: flex !important; }
 
-/* modal-content 已使用 layout-width 對齊，這裡設定高度與置中 */
-.modal-content { 
-    margin: auto !important; 
-    background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(40px); 
-    padding: 35px 20px 25px 20px; 
-    max-height: 65vh; /* 縮減 15% 呼吸空間 */
-    overflow-y: auto; border-radius: 35px; box-shadow: 0 30px 60px rgba(0,0,0,0.15); 
-    transform: scale(0.05); opacity: 0; position: relative; cursor: default; 
+function triggerUpload(day) {
+    currentUploadDay = day;
+    document.getElementById('photo-upload-input').click();
 }
-.modal.open .modal-content { transform: scale(1); opacity: 1; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s; }
 
-.close-btn { position: absolute; right: 15px; top: 15px; width: 34px; height: 34px; background: #ffffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 400; line-height: 1; padding-bottom: 2px; cursor: pointer; color: #86868b; z-index: 9999; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); transition: transform 0.2s ease, box-shadow 0.2s ease; }
-.close-btn:hover { transform: scale(1.05); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2); }
+function handlePhotoUpload(event) {
+    const file = event.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 500;
+            const scaleSize = MAX_WIDTH / img.width;
+            canvas.width = MAX_WIDTH;
+            canvas.height = img.height * scaleSize;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            const base64 = canvas.toDataURL('image/jpeg', 0.6); 
+            travelPhotos[`day${currentUploadDay}`] = base64;
+            localStorage.setItem('travelPhotos', JSON.stringify(travelPhotos));
+            renderPhotoDiary();
+        }
+        img.src = e.target.result;
+    }
+    reader.readAsDataURL(file);
+}
 
-/* 雜誌風時間軸 */
-.itinerary-card { background: transparent; padding: 10px 10px 10px 0; margin-bottom: 20px; }
-.time-item { display: flex; align-items: flex-start; padding-bottom: 45px; font-size: 14px; position: relative; z-index: 2; }
-.time-item:last-child { padding-bottom: 5px; }
-.time-item::before { content: ''; position: absolute; left: 70px; top: 24px; bottom: -12px; width: 2px; background: #e5e5ea; z-index: 1; }
-.time-item:last-child::before { display: none; }
-.time-item .time { width: 55px; flex-shrink: 0; font-size: 19px; font-weight: 600; color: #1d1d1f; font-family: var(--title-font) !important; text-align: right; padding-top: 0px; position: relative; }
-.time-item .time::after { content: ''; position: absolute; left: 65px; top: 7px; width: 7px; height: 7px; border-radius: 50%; background: #fff; border: 2.5px solid #d1d1d6; z-index: 3; box-sizing: content-box; }
-.time-item.active .time::after { border-color: var(--ios-blue); background: var(--ios-blue); animation: pulse-dot 2s infinite cubic-bezier(0.25, 0.8, 0.25, 1); transform: translateY(var(--dot-offset, 0px)); transition: transform 1s ease-in-out; }
-@keyframes pulse-dot { 0% { box-shadow: 0 0 0 0 rgba(0, 113, 227, 0.6); } 70% { box-shadow: 0 0 0 10px rgba(0, 113, 227, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 113, 227, 0); } }
+function viewPhoto(day) {
+    currentViewDay = day;
+    const modal = document.getElementById('photoViewerModal');
+    document.getElementById('viewer-img').src = travelPhotos[`day${day}`];
+    modal.style.display = 'flex';
+    setTimeout(() => { modal.classList.add('open'); }, 10);
+}
 
-.item-content { display: flex; flex-direction: column; flex: 1; margin-left: 35px; padding-left: 16px; border-left: 2px solid; margin-top: -2px; }
-.time-item.type-sight .item-content { border-left-color: #a1c4fd; } 
-.time-item.type-food .item-content { border-left-color: #ffb07c; } 
-.item-title { font-size: 19px; font-weight: 700; color: #1d1d1f; line-height: 1.3; font-family: var(--title-font) !important; margin-bottom: 6px; letter-spacing: 0.5px; }
-.time-item.active .item-title { color: var(--ios-blue); }
-.transit-detail { font-size: 14px; color: #8e8e93; margin-top: 4px; font-weight: 400; display: block; line-height: 1.6; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Noto Sans TC", sans-serif !important; }
+function closePhotoViewer() {
+    const modal = document.getElementById('photoViewerModal');
+    modal.classList.remove('open');
+    setTimeout(() => { modal.style.display = 'none'; }, 300);
+}
 
-.glass-btn { display: flex; justify-content: center; align-items: center; background: #fff; padding: 14px; border-radius: 18px; text-decoration: none; color: #1d1d1f; font-weight: 600; margin: 10px 0; border: 1px solid rgba(0,0,0,0.05); }
-.glass-btn.taxi { background: #fffbef !important; border-color: #fce48b !important; color: #b08500 !important; }
-.glass-btn.home-btn { background: #f2f2f7 !important; border-color: #e5e5ea !important; color: #1d1d1f !important; margin-top: 20px; }
+function deletePhoto() {
+    if(confirm("確定要刪除這張照片嗎？")) {
+        delete travelPhotos[`day${currentViewDay}`];
+        localStorage.setItem('travelPhotos', JSON.stringify(travelPhotos));
+        renderPhotoDiary();
+        closePhotoViewer();
+    }
+}
 
-/* 💰 記帳本分頁排版 */
-.expense-modal-content { background: #f2f2f7; padding-bottom: 40px; }
-.ios-modal-header h2 { margin-bottom: 20px; font-size: 22px;}
+/* =========================================
+   ☁️ 記帳本邏輯
+========================================= */
+const CLOUD_API_URL = "https://script.google.com/macros/s/AKfycbx61FkjxrU5yKUmmvOw0kd_hvEUN73B8CfMZaTwFzyHfTPLN8n6L8rmkm4E6RgA2hUDRw/exec";
+let expenses = JSON.parse(localStorage.getItem('travelExpenses')) || [];
 
-.summary-board { background: #fff; border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); text-align: center; }
-.total-spent { font-size: 15px; color: #86868b; font-weight: 600; margin-bottom: 12px; }
-.total-spent span { font-size: 28px; font-weight: 700; color: #1d1d1f; margin-left: 5px; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; }
-.split-details { display: flex; justify-content: space-around; font-size: 13px; font-weight: 600; margin-bottom: 15px; border-bottom: 1px solid #f2f2f7; padding-bottom: 15px; }
-.person { display: flex; align-items: center; gap: 5px; }
-.dot { width: 8px; height: 8px; border-radius: 50%; }
-.dot-timmy { background: #5e5ce6; }
-.dot-jj { background: #ff2d55; }
-.settlement { font-size: 14px; padding: 10px; border-radius: 12px; font-weight: 600; }
-.settlement.owe-timmy { background: rgba(94, 92, 230, 0.1); color: #5e5ce6; }
-.settlement.owe-jj { background: rgba(255, 45, 85, 0.1); color: #ff2d55; }
-.settlement.balanced { background: rgba(52, 199, 89, 0.1); color: #34c759; }
+function openExpenseModal(event) {
+    currentActiveButton = event.currentTarget;
+    const modal = document.getElementById('expenseModal');
+    modal.style.display = 'flex';
+    setModalOrigin(event);
+    void modal.offsetWidth;
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    renderExpenses(expenses.length === 0); 
+    syncFromCloud();
+}
 
-.add-expense-form { background: #fff; border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
-.payer-toggle { position: relative; display: flex; background: #e5e5ea; border-radius: 12px; padding: 4px; margin-bottom: 15px; z-index: 1; }
-.payer-toggle input { display: none; }
-.payer-toggle label { position: relative; z-index: 2; flex: 1; text-align: center; padding: 8px 0; font-size: 13px; font-weight: 600; color: #86868b; cursor: pointer; transition: color 0.3s ease; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
-.payer-toggle input:checked + label[for="payer-timmy"] { color: #5e5ce6; }
-.payer-toggle input:checked + label[for="payer-jj"] { color: #ff2d55; }
-.toggle-slider { position: absolute; top: 4px; left: 4px; width: calc(50% - 4px); height: calc(100% - 8px); background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 1; }
-#payer-timmy:checked ~ .toggle-slider { transform: translateX(0); }
-#payer-jj:checked ~ .toggle-slider { transform: translateX(100%); }
+function closeExpenseModal() {
+    const modal = document.getElementById('expenseModal');
+    if (modal) {
+        setModalOrigin();
+        modal.classList.remove('open');
+        setTimeout(() => {
+            if (!modal.classList.contains('open')) {
+                modal.style.display = 'none';
+                currentActiveButton = null;
+            }
+        }, 300);
+        document.body.style.overflow = '';
+    }
+}
 
-.input-row { margin-bottom: 12px; }
-.input-row input { width: 100%; background: #f2f2f7; border: none; padding: 14px; border-radius: 12px; font-size: 15px; outline: none; font-weight: 500; font-family: inherit; }
-.add-btn { width: 100%; background: var(--ios-blue); color: #fff; border: none; padding: 14px; border-radius: 14px; font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-.add-btn:active { transform: scale(0.98); opacity: 0.9; }
+async function syncFromCloud() {
+    try {
+        const response = await fetch(CLOUD_API_URL + "?t=" + new Date().getTime());
+        const data = await response.json();
+        if (Array.isArray(data)) {
+            expenses = data;
+            localStorage.setItem('travelExpenses', JSON.stringify(expenses));
+            renderExpenses();
+            renderCategorySummary();
+        }
+    } catch (error) { console.error("雲端同步失敗", error); }
+}
 
-.expense-list-container h3 { font-size: 15px; color: #86868b; margin-left: 10px; margin-bottom: 10px; }
-.exp-item { background: #fff; border-radius: 16px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
-.exp-item-left { display: flex; align-items: center; gap: 12px; }
-.exp-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 16px; }
-.exp-avatar.color-timmy { background: rgba(94, 92, 230, 0.1); }
-.exp-avatar.color-jj { background: rgba(255, 45, 85, 0.1); }
-.exp-info { display: flex; flex-direction: column; }
-.exp-desc { font-size: 14px; font-weight: 600; color: #1d1d1f; }
-.exp-date { font-size: 10px; color: #86868b; margin-top: 3px; font-weight: 500; }
-.exp-item-right { display: flex; align-items: center; gap: 15px; }
-.exp-price { font-size: 16px; font-weight: 700; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; }
-.exp-delete { background: #f2f2f7; width: 28px; height: 28px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 12px; cursor: pointer; transition: 0.2s; }
-.exp-delete:active { background: #ff3b30; color: #fff; }
+async function addExpense() {
+    const payer = document.querySelector('input[name="payer"]:checked').value;
+    const category = document.querySelector('input[name="exp-cat"]:checked').value;
+    const amountInput = document.getElementById('expense-amount').value;
+    const descInput = document.getElementById('expense-desc').value;
+    const amount = parseInt(amountInput);
+    
+    if (!amount || amount <= 0 || !descInput.trim()) { alert("請輸入有效的金額與項目！"); return; }
 
-.category-toggle { display: flex; gap: 8px; margin-bottom: 12px; }
-.category-toggle input { display: none; }
-.category-toggle label { flex: 1; text-align: center; padding: 10px 0; background: #f2f2f7; border-radius: 12px; font-size: 12px; font-weight: 600; color: #8e8e93; cursor: pointer; transition: 0.2s; -webkit-tap-highlight-color: transparent; }
-.category-toggle input:checked + label[for="cat-food"] { background: #ffcc00; color: #fff; box-shadow: 0 2px 8px rgba(255, 204, 0, 0.4); }
-.category-toggle input:checked + label[for="cat-trans"] { background: #34c759; color: #fff; box-shadow: 0 2px 8px rgba(52, 199, 89, 0.4); }
-.category-toggle input:checked + label[for="cat-shop"] { background: #af52de; color: #fff; box-shadow: 0 2px 8px rgba(175, 82, 222, 0.4); }
-.category-toggle input:checked + label[for="cat-other"] { background: #8e8e93; color: #fff; box-shadow: 0 2px 8px rgba(142, 142, 147, 0.4); }
+    const newExpense = { 
+        action: "add", 
+        id: Date.now(), 
+        payer: payer, 
+        amount: amount, 
+        desc: descInput.trim(), 
+        cat: category,
+        date: new Date().toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) 
+    };
 
-.list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 10px; }
-.list-header h3 { font-size: 15px; color: #86868b; margin: 0; }
-.summary-btn { background: #e5e5ea; border: none; padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; color: #1d1d1f; cursor: pointer; }
-.summary-btn:active { transform: scale(0.95); }
-#category-summary-view { background: #fff; border-radius: 16px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
-.cat-bar-container { display: flex; align-items: center; margin-bottom: 10px; font-size: 13px; font-weight: 600; color: #1d1d1f; }
-.cat-bar-container:last-child { margin-bottom: 0; }
-.cat-label { width: 45px; flex-shrink: 0; }
-.cat-track { flex: 1; height: 10px; background: #f2f2f7; border-radius: 5px; margin: 0 10px; overflow: hidden; }
-.cat-fill { height: 100%; border-radius: 5px; }
-.cat-amount { width: 55px; text-align: right; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; }
-.exp-cat-tag { font-size: 10px; background: #f2f2f7; padding: 2px 6px; border-radius: 6px; margin-right: 6px; color: #8e8e93; }
+    expenses.push(newExpense);
+    localStorage.setItem('travelExpenses', JSON.stringify(expenses));
+    renderExpenses();
+    renderCategorySummary();
+    
+    document.getElementById('expense-amount').value = '';
+    document.getElementById('expense-desc').value = '';
 
-/* 📷 旅程回憶錄 (相片牆 Modal) */
-.photo-diary-modal-content { background: #f2f2f7; }
-.photo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding-bottom: 15px; }
+    fetch(CLOUD_API_URL, {
+        method: 'POST', 
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+        body: JSON.stringify(newExpense)
+    }).catch(e => console.error("雲端上傳失敗", e));
+}
 
-.photo-card { width: 100%; height: 160px; background: #fff; border-radius: 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.06); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; cursor: pointer; padding: 8px; border: 1px solid rgba(0,0,0,0.02); }
-.photo-card:active { transform: scale(0.97); }
-.photo-card-inner { width: 100%; height: 100%; background: #f2f2f7; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; position: relative; }
-.photo-card-inner.empty { border: 2px dashed #d1d1d6; background: transparent; }
-.photo-card-inner img { width: 100%; height: 100%; object-fit: cover; }
-.photo-day-label { font-size: 13px; font-weight: 700; color: #8e8e93; font-family: var(--title-font) !important; }
-.photo-add-icon { font-size: 24px; margin-bottom: 5px; opacity: 0.5; }
-.photo-overlay-label { position: absolute; bottom: 8px; left: 8px; right: 8px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); padding: 4px; border-radius: 8px; font-size: 11px; font-weight: 700; text-align: center; color: #1d1d1f; }
+async function deleteExpense(id) {
+    if(confirm("確定要刪除這筆紀錄嗎？")) {
+        expenses = expenses.filter(exp => exp.id != id); 
+        localStorage.setItem('travelExpenses', JSON.stringify(expenses));
+        renderExpenses();
+        renderCategorySummary();
 
-/* 📷 照片預覽與刪除視窗 */
-.photo-viewer-content { padding: 20px; display: flex; flex-direction: column; align-items: center; background: rgba(255, 255, 255, 0.96); border-radius: 25px; }
-#viewer-img { width: 100%; max-height: 45vh; object-fit: contain; border-radius: 12px; margin-bottom: 15px; background: #f2f2f7; }
-.delete-photo-btn { background: #ff3b30; color: #fff; border: none; padding: 12px 20px; border-radius: 14px; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; transition: 0.2s; }
-.delete-photo-btn:active { transform: scale(0.98); opacity: 0.9; }
+        fetch(CLOUD_API_URL, {
+            method: 'POST', 
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+            body: JSON.stringify({ action: "delete", id: id })
+        }).catch(e => console.error("雲端刪除失敗", e));
+    }
+}
+
+function toggleCategorySummary() {
+    const view = document.getElementById('category-summary-view');
+    if (view.style.display === 'none') {
+        renderCategorySummary();
+        view.style.display = 'block';
+    } else { 
+        view.style.display = 'none'; 
+    }
+}
+
+function renderCategorySummary() {
+    const view = document.getElementById('category-summary-view');
+    let totals = { "餐食": 0, "交通": 0, "購物": 0, "其他": 0 };
+    let grandTotal = 0;
+
+    expenses.forEach(exp => {
+        let cat = exp.cat || "其他"; 
+        if(totals[cat] !== undefined) totals[cat] += parseInt(exp.amount);
+        grandTotal += parseInt(exp.amount);
+    });
+
+    const colors = { "餐食": "#ffcc00", "交通": "#34c759", "購物": "#af52de", "其他": "#8e8e93" };
+    let html = '';
+    for (const [cat, amt] of Object.entries(totals)) {
+        let percentage = grandTotal === 0 ? 0 : Math.round((amt / grandTotal) * 100);
+        html += `
+            <div class="cat-bar-container">
+                <span class="cat-label">${cat}</span>
+                <div class="cat-track">
+                    <div class="cat-fill" style="width: ${percentage}%; background: ${colors[cat]};"></div>
+                </div>
+                <span class="cat-amount">¥${amt.toLocaleString()}</span>
+            </div>`;
+    }
+    view.innerHTML = html;
+}
+
+function renderExpenses(isLoading = false) {
+    const listContainer = document.getElementById('expense-list');
+    if (!listContainer) return; 
+    listContainer.innerHTML = '';
+    
+    if (isLoading) { 
+        listContainer.innerHTML = '<p style="text-align:center; color:#86868b; font-size:12px; margin-top:20px;">☁️ 雲端同步中...</p>'; 
+        return; 
+    }
+
+    let timmyTotal = 0; let jjTotal = 0;
+    const reversedExpenses = [...expenses].reverse();
+
+    reversedExpenses.forEach(exp => {
+        if (exp.payer === 'Timmy') { 
+            timmyTotal += parseInt(exp.amount); 
+        } else { 
+            jjTotal += parseInt(exp.amount); 
+        }
+        
+        const iconStr = exp.payer === 'Timmy' ? '👦🏻' : '👧🏻';
+        const colorClass = exp.payer === 'Timmy' ? 'color-timmy' : 'color-jj';
+        const catTag = exp.cat ? `<span class="exp-cat-tag">${exp.cat}</span>` : ""; 
+        
+        listContainer.innerHTML += `
+            <div class="exp-item">
+                <div class="exp-item-left">
+                    <div class="exp-avatar ${colorClass}">${iconStr}</div>
+                    <div class="exp-info">
+                        <span class="exp-desc">${catTag}${exp.desc}</span>
+                        <span class="exp-date">${exp.date}</span>
+                    </div>
+                </div>
+                <div class="exp-item-right">
+                    <span class="exp-price">¥${parseInt(exp.amount).toLocaleString()}</span>
+                    <div class="exp-delete" onclick="deleteExpense('${exp.id}')">🗑️</div>
+                </div>
+            </div>`;
+    });
+
+    if(reversedExpenses.length === 0) {
+        listContainer.innerHTML = '<p style="text-align:center; color:#86868b; font-size:12px; margin-top:20px;">尚無紀錄，開始記帳吧！</p>';
+    }
+
+    const total = timmyTotal + jjTotal;
+    const totalAmountEl = document.getElementById('total-amount');
+    const timmyPaidEl = document.getElementById('timmy-paid');
+    const jjPaidEl = document.getElementById('jj-paid');
+    const settlementText = document.getElementById('settlement-text');
+
+    if(totalAmountEl) totalAmountEl.innerText = total.toLocaleString();
+    if(timmyPaidEl) timmyPaidEl.innerText = timmyTotal.toLocaleString();
+    if(jjPaidEl) jjPaidEl.innerText = jjTotal.toLocaleString();
+
+    if(settlementText) {
+        const diff = timmyTotal - jjTotal;
+        const halfDiff = Math.abs(diff) / 2;
+
+        if (diff > 0) {
+            settlementText.innerHTML = `⚠️ <b>ㄐㄐ</b> 需給 Timmy： <b>¥${halfDiff.toLocaleString()}</b>`;
+            settlementText.className = "settlement owe-timmy";
+        } else if (diff < 0) {
+            settlementText.innerHTML = `⚠️ <b>Timmy</b> 需給 ㄐㄐ： <b>¥${halfDiff.toLocaleString()}</b>`;
+            settlementText.className = "settlement owe-jj";
+        } else {
+            settlementText.innerHTML = `✅ 目前帳目完美平衡`;
+            settlementText.className = "settlement balanced";
+        }
+    }
+}
