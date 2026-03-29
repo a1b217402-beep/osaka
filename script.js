@@ -58,7 +58,8 @@ function closeModal() {
 }
 
 function getWeatherEmoji(code) {
-    const table = { 0: "☀️", 1: "⛅", 2: "⛅", 3: "☁️", 45: "🌫️", 51: "🌧️", 61: "🌧️", 95: "⛈️" };
+    // 修正：將容易變成方形亂碼的 🌫️ (霧) 統一替換為大家都能完美顯示的 ☁️ (雲朵)
+    const table = { 0: "☀️", 1: "⛅", 2: "⛅", 3: "☁️", 45: "☁️", 48: "☁️", 51: "🌧️", 61: "🌧️", 95: "⛈️" };
     return table[code] || "🌤️";
 }
 
@@ -195,11 +196,9 @@ function init() {
         navigator.geolocation.getCurrentPosition(async (pos) => {
             const { latitude: lat, longitude: lon } = pos.coords;
             try {
-                // 呼叫地名轉換 API
                 const geo = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=zh`);
                 const gData = await geo.json();
                 
-                // 🚀 全新精準定位邏輯：抓取市 + 區
                 let cityStr = gData.city || gData.principalSubdivision || "";
                 let localityStr = gData.locality || "";
                 let displayName = "目前位置";
@@ -214,7 +213,7 @@ function init() {
             } catch { 
                 fetchWeather(lat, lon, "目前位置"); 
             }
-        }, () => fetchWeather(34.666, 135.500, "大阪市 中央區 (預設)")); // 定位失敗時預設顯示飯店所在的中央區
+        }, () => fetchWeather(34.666, 135.500, "大阪市 中央區 (預設)")); 
     } else { 
         fetchWeather(34.666, 135.500, "大阪市 中央區 (預設)"); 
     }
