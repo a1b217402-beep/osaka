@@ -382,3 +382,73 @@ header h1 { margin: 0; font-size: 24px; }
 .result-card.visa .res-amount { color: #0071e3; }
 
 footer { flex-shrink: 0; text-align: center; padding: 5px 0 max(15px, env(safe-area-inset-bottom)) 0; color: #424245; font-size: 11px; font-weight: 500; }
+
+/* =========================================
+   ✈️ 航班動態卡片樣式
+========================================= */
+.theme-toggle { position: absolute; right: 20px; top: max(20px, env(safe-area-inset-top)); background: rgba(255,255,255,0.8); border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.05); z-index: 101; transition: transform 0.2s; }
+.theme-toggle:active { transform: scale(0.9); }
+
+.flight-tracker-card { background: #f8f8fa; border-radius: 16px; padding: 15px; margin-top: 12px; border: 1px solid rgba(0,0,0,0.03); cursor: pointer; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+.flight-tracker-card:active { transform: scale(0.96); }
+.flight-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.flight-no { font-weight: 700; font-size: 14px; color: #1d1d1f; }
+.flight-status { font-size: 11px; padding: 4px 8px; border-radius: 8px; font-weight: 600; background: #e5e5ea; color: #86868b; transition: all 0.3s; }
+.flight-status.on-time { background: rgba(52, 199, 89, 0.15); color: #34c759; }
+.flight-status.delayed { background: rgba(255, 59, 48, 0.15); color: #ff3b30; }
+.flight-route { display: flex; align-items: center; justify-content: space-between; }
+.route-point { display: flex; flex-direction: column; align-items: center; }
+.r-code { font-size: 22px; font-weight: 700; font-family: -apple-system, sans-serif; color: var(--ios-blue); }
+.r-time { font-size: 14px; font-weight: 600; margin: 2px 0; color: #1d1d1f; }
+.r-term { font-size: 11px; color: #86868b; }
+.route-line { flex: 1; height: 2px; background: repeating-linear-gradient(to right, #d1d1d6, #d1d1d6 4px, transparent 4px, transparent 8px); margin: 0 15px; position: relative; display: flex; align-items: center; justify-content: center; }
+.plane-icon { font-size: 18px; color: var(--ios-blue); background: #f8f8fa; padding: 0 5px; }
+
+/* =========================================
+   🌙 深色模式 (Dark Mode) 全局覆寫
+========================================= */
+[data-theme="dark"] body {
+    color: #f5f5f7;
+    background: linear-gradient(217deg, #3d1b22, rgba(0,0,0,0) 70.71%),
+                linear-gradient(127deg, #2a1b22, rgba(0,0,0,0) 70.71%),
+                linear-gradient(336deg, #152033, rgba(0,0,0,0) 70.71%);
+    background-size: 200% 200%; 
+}
+[data-theme="dark"] .theme-toggle { background: rgba(28,28,30,0.8); color: #fff; }
+[data-theme="dark"] header { background: rgba(0, 0, 0, 0.4); }
+[data-theme="dark"] .subtitle { color: #a1a1a6; }
+[data-theme="dark"] .nav-btn { background: rgba(28, 28, 30, 0.85); border-color: rgba(255,255,255,0.1); color: #f5f5f7; }
+[data-theme="dark"] .weather-widget, [data-theme="dark"] .preview-card-content, [data-theme="dark"] .trigger-card { background: rgba(28, 28, 30, 0.85); border-color: rgba(255,255,255,0.1); }
+[data-theme="dark"] .weather-subtitle, [data-theme="dark"] .next-activity-row, [data-theme="dark"] .preview-right, [data-theme="dark"] .trig-sub { color: #a1a1a6; }
+[data-theme="dark"] .next-time, [data-theme="dark"] .trig-title { color: #f5f5f7; }
+[data-theme="dark"] .trig-icon { background: #2c2c2e; }
+[data-theme="dark"] .bottom-tab-bar { background: rgba(28, 28, 30, 0.9); }
+[data-theme="dark"] .tab-indicator { background: rgba(255, 255, 255, 0.15); }
+[data-theme="dark"] .tab-btn.active { color: #f5f5f7; }
+[data-theme="dark"] .modal-content { background: rgba(28, 28, 30, 0.96); }
+[data-theme="dark"] .close-btn { background: #2c2c2e; color: #f5f5f7; }
+[data-theme="dark"] .time-item .time { color: #f5f5f7; }
+[data-theme="dark"] .time-item .time::after { background: #1c1c1e; border-color: #3a3a3c; }
+[data-theme="dark"] .item-title { color: #f5f5f7; }
+[data-theme="dark"] .transit-detail { color: #a1a1a6; }
+[data-theme="dark"] .glass-btn { background: #2c2c2e; color: #f5f5f7; border-color: rgba(255,255,255,0.1); }
+[data-theme="dark"] .glass-btn.taxi { background: #332b10 !important; border-color: #5c4b1a !important; color: #ffd60a !important; }
+[data-theme="dark"] .expense-modal-content, [data-theme="dark"] .photo-diary-modal-content { background: #000; }
+[data-theme="dark"] .summary-board, [data-theme="dark"] .add-expense-form, [data-theme="dark"] .exp-item, [data-theme="dark"] #category-summary-view { background: #1c1c1e; }
+[data-theme="dark"] .total-spent span, [data-theme="dark"] .exp-desc, [data-theme="dark"] .exp-price, [data-theme="dark"] .cat-bar-container { color: #f5f5f7; }
+[data-theme="dark"] .payer-toggle, [data-theme="dark"] .input-row input, [data-theme="dark"] .category-toggle label { background: #2c2c2e; color: #a1a1a6; }
+[data-theme="dark"] .toggle-slider { background: #1c1c1e; }
+[data-theme="dark"] .payer-toggle input:checked + label[for="payer-timmy"] { color: #5e5ce6; }
+[data-theme="dark"] .exp-delete, [data-theme="dark"] .summary-btn, [data-theme="dark"] .exp-cat-tag { background: #2c2c2e; color: #f5f5f7; }
+[data-theme="dark"] .cat-track { background: #2c2c2e; }
+[data-theme="dark"] .photo-card { background: #1c1c1e; }
+[data-theme="dark"] .photo-card-inner { background: #2c2c2e; }
+[data-theme="dark"] .photo-card-inner.empty { border-color: #3a3a3c; }
+[data-theme="dark"] .photo-overlay-label { background: rgba(28, 28, 30, 0.85); color: #f5f5f7; }
+[data-theme="dark"] .photo-viewer-content { background: rgba(28, 28, 30, 0.96); }
+[data-theme="dark"] #viewer-img { background: #000; }
+[data-theme="dark"] .exchange-rate-card, [data-theme="dark"] .calc-section, [data-theme="dark"] .result-card { background: #1c1c1e; }
+[data-theme="dark"] .ex-rate-title, [data-theme="dark"] .calc-symbol, [data-theme="dark"] .calc-input-wrapper input, [data-theme="dark"] .res-title { color: #f5f5f7; }
+[data-theme="dark"] .flight-tracker-card { background: #2c2c2e; border-color: rgba(255,255,255,0.05); }
+[data-theme="dark"] .flight-no, [data-theme="dark"] .r-time { color: #f5f5f7; }
+[data-theme="dark"] .plane-icon { background: #2c2c2e; }
