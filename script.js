@@ -211,9 +211,6 @@ function updateItineraryPreview() {
     }
 }
 
-// =========================================
-// 💱 匯率與刷卡試算邏輯 (全新)
-// =========================================
 let currentJpyToTwd = 0.2100; 
 
 async function fetchExchangeRate() {
@@ -247,9 +244,7 @@ function calculateExchange() {
     const jpyAmount = parseFloat(jpyInput) || 0;
     
     const twdCash = jpyAmount * currentJpyToTwd;
-    // Visa 普遍加上 1.5% 手續費
     const twdVisa = twdCash * 1.015; 
-    // Mastercard 通常匯率微優，我們模擬便宜一點點 (大約省千分之五) 加上 1.5% 手續費的結果
     const twdMaster = twdCash * 1.0145; 
 
     document.getElementById('twd-cash').innerText = `NT$ ${Math.round(twdCash).toLocaleString()}`;
@@ -289,7 +284,6 @@ function init() {
     updateItineraryPreview();
     setInterval(updateItineraryPreview, 30000); 
     
-    // 🚀 初始化抓取匯率
     fetchExchangeRate();
 
     setTimeout(() => switchTab('home'), 100);
@@ -427,9 +421,6 @@ window.addEventListener('resize', () => {
     }
 });
 
-/* =========================================
-   📷 旅程回憶錄邏輯 (Modal 彈出視窗)
-========================================= */
 let travelPhotos = JSON.parse(localStorage.getItem('travelPhotos')) || {};
 let currentUploadDay = 1;
 let currentViewDay = null; 
@@ -539,9 +530,6 @@ function deletePhoto() {
     }
 }
 
-/* =========================================
-   ☁️ 記帳本邏輯
-========================================= */
 const CLOUD_API_URL = "https://script.google.com/macros/s/AKfycbx61FkjxrU5yKUmmvOw0kd_hvEUN73B8CfMZaTwFzyHfTPLN8n6L8rmkm4E6RgA2hUDRw/exec";
 let expenses = JSON.parse(localStorage.getItem('travelExpenses')) || [];
 
@@ -617,6 +605,22 @@ async function addExpense() {
         headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
         body: JSON.stringify(newExpense)
     }).catch(e => console.error("雲端上傳失敗", e));
+
+    // 🌟 新增：記帳按鈕點擊後的微動效 (文字變化與顏色回饋)
+    const addBtn = document.querySelector('.add-btn');
+    if (addBtn) {
+        const originalText = addBtn.innerHTML;
+        const originalBg = addBtn.style.background;
+        addBtn.innerHTML = '✅ 已記錄！';
+        addBtn.style.background = '#34c759'; 
+        addBtn.style.transform = 'scale(1.02)';
+        
+        setTimeout(() => {
+            addBtn.innerHTML = originalText;
+            addBtn.style.background = originalBg;
+            addBtn.style.transform = '';
+        }, 1200);
+    }
 }
 
 async function deleteExpense(id) {
@@ -684,6 +688,9 @@ function renderExpenses(isLoading = false) {
     let timmyTotal = 0; let jjTotal = 0;
     const reversedExpenses = [...expenses].reverse();
 
+    // 🌟 讓消費明細一筆一筆滑動進場 (使用 inline style 設定 animation-delay)
+    let itemIndex = 0;
+
     reversedExpenses.forEach(exp => {
         if (exp.payer === 'Timmy') { 
             timmyTotal += parseInt(exp.amount); 
@@ -695,8 +702,9 @@ function renderExpenses(isLoading = false) {
         const colorClass = exp.payer === 'Timmy' ? 'color-timmy' : 'color-jj';
         const catTag = exp.cat ? `<span class="exp-cat-tag">${exp.cat}</span>` : ""; 
         
+        // 🌟 幫每一筆加上 delay，做出瀑布流視覺效果
         listContainer.innerHTML += `
-            <div class="exp-item">
+            <div class="exp-item" style="animation-delay: ${itemIndex * 0.05}s;">
                 <div class="exp-item-left">
                     <div class="exp-avatar ${colorClass}">${iconStr}</div>
                     <div class="exp-info">
@@ -709,6 +717,8 @@ function renderExpenses(isLoading = false) {
                     <div class="exp-delete" onclick="deleteExpense('${exp.id}')">🗑️</div>
                 </div>
             </div>`;
+        
+        itemIndex++;
     });
 
     if(reversedExpenses.length === 0) {
