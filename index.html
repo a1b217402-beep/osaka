@@ -131,12 +131,60 @@
 
         <div id="view-exchange" class="tab-view">
             <div class="ios-modal-header layout-width" style="margin-top: 15px; margin-bottom: 20px;">
-                <h2>匯率換算</h2>
+                <h2>匯率與刷卡試算</h2>
             </div>
-            <div class="layout-width" style="background: #fff; border-radius: 20px; padding: 40px 20px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
-                <span style="font-size: 40px; display: block; margin-bottom: 10px;">🚧</span>
-                <h3 style="margin: 0; color: #1d1d1f;">功能建置中</h3>
-                <p style="font-size: 13px; color: #86868b; margin-top: 5px;">這裡將放置即時匯率與快速換算工具</p>
+            
+            <div class="exchange-rate-card layout-width">
+                <div class="ex-rate-left">
+                    <span class="ex-rate-title">即時匯率 (日幣➔台幣)</span>
+                    <span class="ex-rate-time" id="rate-update-time">最後更新: 同步中...</span>
+                </div>
+                <div class="ex-rate-right">
+                    <span class="ex-rate-value" id="current-rate">0.2100</span>
+                </div>
+            </div>
+
+            <div class="calc-section layout-width">
+                <div class="calc-label">輸入日幣標價 (¥)</div>
+                <div class="calc-input-wrapper">
+                    <span class="calc-symbol">¥</span>
+                    <input type="number" inputmode="decimal" id="jpy-input" placeholder="0" oninput="calculateExchange()">
+                </div>
+            </div>
+
+            <div class="calc-results layout-width">
+                <div class="result-card cash">
+                    <div class="res-title-row">
+                        <span class="res-icon">💵</span>
+                        <div class="res-text">
+                            <span class="res-title">現金原價</span>
+                            <span class="res-sub">純匯率換算</span>
+                        </div>
+                    </div>
+                    <span class="res-amount" id="twd-cash">NT$ 0</span>
+                </div>
+                
+                <div class="result-card mastercard">
+                    <div class="res-title-row">
+                        <span class="res-icon">💳</span>
+                        <div class="res-text">
+                            <span class="res-title">Mastercard 預估</span>
+                            <span class="res-sub">含 1.5% 手續費 (匯率較優)</span>
+                        </div>
+                    </div>
+                    <span class="res-amount" id="twd-master">NT$ 0</span>
+                </div>
+
+                <div class="result-card visa">
+                    <div class="res-title-row">
+                        <span class="res-icon">💳</span>
+                        <div class="res-text">
+                            <span class="res-title">Visa 預估</span>
+                            <span class="res-sub">含 1.5% 手續費</span>
+                        </div>
+                    </div>
+                    <span class="res-amount" id="twd-visa">NT$ 0</span>
+                </div>
             </div>
         </div>
 
@@ -187,7 +235,6 @@
     </div>
 
     <div id="data-source" style="display:none;">
-        
         <div id="content-day1">
             <div class="ios-modal-header"><h2>Day 1: 台北 ✈️ 大阪</h2></div>
             <div class="itinerary-card">
