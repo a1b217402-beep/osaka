@@ -1,6 +1,6 @@
 let currentActiveButton = null;
 
-// 🚀 底部導覽列分頁切換與「動態膠囊定位」
+// 🚀 導覽列分頁切換
 function switchTab(tabId) {
     document.querySelectorAll('.tab-view').forEach(view => {
         view.classList.remove('active');
@@ -13,7 +13,6 @@ function switchTab(tabId) {
     const activeBtn = document.getElementById('btn-' + tabId);
     activeBtn.classList.add('active');
     
-    // 讓灰色膠囊滑動到指定按鈕的後方
     const indicator = document.getElementById('tab-indicator');
     if (indicator && activeBtn) {
         indicator.style.transform = `translateX(${activeBtn.offsetLeft}px)`;
@@ -242,12 +241,16 @@ function init() {
 
     syncFromCloud();
     renderExpenses(expenses.length === 0);
+
     updateItineraryPreview();
     setInterval(updateItineraryPreview, 30000); 
     
-    // 初始化確保膠囊定位在首頁
+    // 初始化導覽列
     setTimeout(() => switchTab('home'), 100);
 
+    // =========================================
+    // 💰 記帳本 Toggle 滑動功能
+    // =========================================
     const toggleArea = document.querySelector('.payer-toggle');
     const slider = document.querySelector('.toggle-slider');
     
@@ -291,6 +294,89 @@ function init() {
         });
     }
 
+    // =========================================
+    // 🚀 導覽列專屬：手指追蹤滑動切換 (Tab Bar Drag)
+    // =========================================
+    const tabBar = document.querySelector('.bottom-tab-bar');
+    const tabIndicator = document.getElementById('tab-indicator');
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabsList = ['home', 'expense', 'exchange'];
+
+    if (tabBar && tabIndicator) {
+        let isTabDragging = false; 
+        let tabStartX = 0; 
+        let initialIndicatorX = 0;
+
+        tabBar.addEventListener('touchstart', e => {
+            // 如果畫面上打開了任何浮動視窗，就不要觸發導覽列滑動
+            if (document.querySelector('.modal.open')) return;
+            
+            isTabDragging = true; 
+            tabStartX = e.changedTouches[0].clientX;
+            
+            // 抓取當下膠囊的位置
+            const activeBtn = document.querySelector('.tab-btn.active');
+            initialIndicatorX = activeBtn ? activeBtn.offsetLeft : 0;
+            
+            // 關閉過場動畫，讓膠囊跟著手指無延遲移動
+            tabIndicator.style.transition = 'none';
+        }, { passive: true });
+
+        tabBar.addEventListener('touchmove', e => {
+            if (!isTabDragging) return;
+            let currentX = e.changedTouches[0].clientX;
+            let diff = currentX - tabStartX;
+            let newTranslate = initialIndicatorX + diff;
+            
+            // 邊界限制設定 (不要讓膠囊滑出框外)
+            const minX = 0;
+            const maxX = tabBar.offsetWidth - tabIndicator.offsetWidth;
+            if (newTranslate < minX) newTranslate = minX;
+            if (newTranslate > maxX) newTranslate = maxX;
+            
+            // 手指滑到哪，膠囊就滑到哪
+            tabIndicator.style.transform = `translateX(${newTranslate}px)`;
+            
+            // 阻止滑動時螢幕一起捲動
+            if (Math.abs(diff) > 5 && e.cancelable) e.preventDefault();
+        }, { passive: false });
+
+        tabBar.addEventListener('touchend', e => {
+            if (!isTabDragging) return;
+            isTabDragging = false;
+            let currentX = e.changedTouches[0].clientX;
+            let diff = currentX - tabStartX;
+            
+            // 恢復過場動畫
+            tabIndicator.style.transition = ''; 
+            
+            // 若滑動距離超過一定像素，判定放開時最靠近的按鈕
+            if (Math.abs(diff) > 10) {
+                let indicatorCenter = initialIndicatorX + diff + (tabIndicator.offsetWidth / 2);
+                let closestTab = tabsList[0];
+                let minDistance = Infinity;
+                
+                tabBtns.forEach((btn, index) => {
+                    let btnCenter = btn.offsetLeft + (btn.offsetWidth / 2);
+                    let distance = Math.abs(indicatorCenter - btnCenter);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestTab = tabsList[index];
+                    }
+                });
+                // 切換到最接近的分頁
+                switchTab(closestTab);
+            } else {
+                // 滑動距離不夠，將膠囊彈回原本的按鈕
+                const activeBtn = document.querySelector('.tab-btn.active');
+                if (activeBtn) {
+                    tabIndicator.style.transform = `translateX(${activeBtn.offsetLeft}px)`;
+                }
+            }
+        });
+    }
+
+    // 關閉視窗邏輯
     document.querySelectorAll('.modal').forEach(modal => {
         modal.addEventListener('click', function(event) {
             if (event.target === this) {
@@ -301,55 +387,11 @@ function init() {
             }
         });
     });
-
-    // 🚀 全域滑動偵測 (支援左右滑動切換分頁)
-    const tabsList = ['home', 'expense', 'exchange'];
-    let swipeStartX = 0;
-    let swipeStartY = 0;
-
-    document.addEventListener('touchstart', e => {
-        if (e.touches.length > 1) return;
-        const openModal = document.querySelector('.modal.open');
-        if (openModal) return;
-        // 避免與其他橫向滑動元件衝突
-        if (e.target.closest('.hourly-forecast') || e.target.closest('.photo-grid') || e.target.closest('.payer-toggle') || e.target.closest('.expense-list-container') || e.target.closest('.nav-container')) return;
-        
-        swipeStartX = e.changedTouches[0].clientX;
-        swipeStartY = e.changedTouches[0].clientY;
-    }, { passive: true });
-
-    document.addEventListener('touchend', e => {
-        if (e.changedTouches.length > 1) return;
-        const openModal = document.querySelector('.modal.open');
-        if (openModal) return;
-        if (e.target.closest('.hourly-forecast') || e.target.closest('.photo-grid') || e.target.closest('.payer-toggle') || e.target.closest('.expense-list-container') || e.target.closest('.nav-container')) return;
-
-        let swipeEndX = e.changedTouches[0].clientX;
-        let swipeEndY = e.changedTouches[0].clientY;
-        let deltaX = swipeEndX - swipeStartX;
-        let deltaY = swipeEndY - swipeStartY;
-
-        // 判斷橫向滑動 (X軸移動大於50px，且Y軸移動小於100px，確保是水平滑動)
-        if (Math.abs(deltaX) > 50 && Math.abs(deltaY) < 100) {
-            let activeBtn = document.querySelector('.tab-btn.active');
-            if(!activeBtn) return;
-            let currentTabId = activeBtn.id.replace('btn-', '');
-            let currentIndex = tabsList.indexOf(currentTabId);
-            
-            if (deltaX < 0 && currentIndex < tabsList.length - 1) { 
-                // 向左滑動 -> 切換到下一頁
-                switchTab(tabsList[currentIndex + 1]);
-            } else if (deltaX > 0 && currentIndex > 0) { 
-                // 向右滑動 -> 切換到上一頁
-                switchTab(tabsList[currentIndex - 1]);
-            }
-        }
-    }, { passive: true });
 }
 
 document.addEventListener('DOMContentLoaded', init);
 
-// 視窗大小改變時，重新定位膠囊指示器
+// 視窗大小改變時，重新對齊膠囊位置
 window.addEventListener('resize', () => {
     const activeBtn = document.querySelector('.tab-btn.active');
     if (activeBtn) {
