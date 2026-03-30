@@ -34,9 +34,16 @@ body {
     100% { background-position: 0% 50%; } 
 }
 
+/* 🌟 微調分頁載入動畫，變得更絲滑 */
 @keyframes fadeUp { 
-    from { opacity: 0; transform: translateY(20px); } 
-    to { opacity: 1; transform: translateY(0); } 
+    from { opacity: 0; transform: translateY(15px) scale(0.98); } 
+    to { opacity: 1; transform: translateY(0) scale(1); } 
+}
+
+/* 🌟 新增：瀑布流滑動進場動畫 (用於行程與記帳清單) */
+@keyframes slideInItem {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 h1, h2, h3, h4, h5, h6, .serif { 
@@ -60,7 +67,7 @@ header h1 { margin: 0; font-size: 24px; }
 /* =========================================
    🚀 導覽列分頁切換與 100% 等寬對齊
 ========================================= */
-.tab-view { display: none; animation: fadeUp 0.3s ease-out forwards; }
+.tab-view { display: none; animation: fadeUp 0.35s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; }
 .tab-view.active { display: block; }
 
 .layout-width {
@@ -76,10 +83,22 @@ header h1 { margin: 0; font-size: 24px; }
 .expense-trigger-section { margin-bottom: 15px !important; padding: 0; display: block; width: 100%; }
 .photo-trigger-section { margin-bottom: 30px !important; padding: 0; display: block; width: 100%; }
 
-.weather-widget, .hero, .expense-trigger-section, .photo-trigger-section { animation: fadeUp 0.8s ease-out forwards; }
+.weather-widget, .hero, .expense-trigger-section, .photo-trigger-section { animation: fadeUp 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; }
 
 .nav-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-.nav-btn { background: rgba(255, 255, 255, 0.85); border: 1px solid rgba(255,255,255,0.5); padding: 12px 0; border-radius: 15px; font-weight: 600; font-size: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+
+/* 🌟 加入按鈕微動效 */
+.nav-btn { 
+    background: rgba(255, 255, 255, 0.85); border: 1px solid rgba(255,255,255,0.5); 
+    padding: 12px 0; border-radius: 15px; font-weight: 600; font-size: 12px; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03); 
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+    cursor: pointer;
+}
+.nav-btn:active {
+    transform: scale(0.92);
+    background: rgba(255, 255, 255, 0.6);
+}
 
 /* 天氣小工具 */
 .weather-widget { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); border-radius: 25px; padding: 18px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
@@ -96,7 +115,8 @@ header h1 { margin: 0; font-size: 24px; }
 .hourly-item .h-precip { font-size: 10px; color: var(--ios-blue); font-weight: 600; margin-top: 2px; }
 
 /* 看板卡片 */
-.preview-card-content { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(30px); padding: 20px 22px; border-radius: 28px; border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 15px 35px rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+.preview-card-content { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(30px); padding: 20px 22px; border-radius: 28px; border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 15px 35px rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+.preview-card-content:active { transform: scale(0.97); }
 .preview-middle { flex: 1; display: flex; flex-direction: column; padding-right: 15px; border-right: 1px solid rgba(0,0,0,0.05); }
 .current-time { font-size: 32px; font-weight: 700; line-height: 1.1; margin-bottom: 4px; }
 .activity-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
@@ -108,7 +128,7 @@ header h1 { margin: 0; font-size: 24px; }
 .next-label { font-size: 10px; font-weight: 600; }
 
 /* 觸發方塊 */
-.trigger-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(30px); padding: 16px 22px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 10px 25px rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: transform 0.2s; }
+.trigger-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(30px); padding: 16px 22px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 10px 25px rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
 .trigger-card:active { transform: scale(0.97); }
 .trig-left { display: flex; align-items: center; gap: 12px; }
 .trig-icon { font-size: 26px; background: #f2f2f7; padding: 10px; border-radius: 50%; }
@@ -168,7 +188,8 @@ header h1 { margin: 0; font-size: 24px; }
 }
 
 .tab-btn.active { color: #1d1d1f; }
-.tab-icon { font-size: 22px; line-height: 1; }
+.tab-icon { font-size: 22px; line-height: 1; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+.tab-btn:active .tab-icon { transform: scale(0.85); }
 .tab-label { font-size: 11px; font-weight: 700; line-height: 1; }
 
 /* 彈出視窗基礎設定 */
@@ -194,7 +215,23 @@ header h1 { margin: 0; font-size: 24px; }
 
 /* 雜誌風時間軸與「移動閃爍圓點」 */
 .itinerary-card { background: transparent; padding: 10px 10px 10px 0; margin-bottom: 20px; }
-.time-item { display: flex; align-items: flex-start; padding-bottom: 45px; font-size: 14px; position: relative; z-index: 2; }
+
+/* 🌟 加入行程列表瀑布流微動效 */
+.time-item { 
+    display: flex; align-items: flex-start; padding-bottom: 45px; font-size: 14px; position: relative; z-index: 2;
+    opacity: 0; animation: slideInItem 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.time-item:nth-child(1) { animation-delay: 0.05s; }
+.time-item:nth-child(2) { animation-delay: 0.10s; }
+.time-item:nth-child(3) { animation-delay: 0.15s; }
+.time-item:nth-child(4) { animation-delay: 0.20s; }
+.time-item:nth-child(5) { animation-delay: 0.25s; }
+.time-item:nth-child(6) { animation-delay: 0.30s; }
+.time-item:nth-child(7) { animation-delay: 0.35s; }
+.time-item:nth-child(8) { animation-delay: 0.40s; }
+.time-item:nth-child(9) { animation-delay: 0.45s; }
+.time-item:nth-child(10) { animation-delay: 0.50s; }
+
 .time-item:last-child { padding-bottom: 5px; }
 .time-item::before { content: ''; position: absolute; left: 70px; top: 24px; bottom: -12px; width: 2px; background: #e5e5ea; z-index: 1; }
 .time-item:last-child::before { display: none; }
@@ -210,7 +247,9 @@ header h1 { margin: 0; font-size: 24px; }
 .time-item.active .item-title { color: var(--ios-blue); }
 .transit-detail { font-size: 14px; color: #8e8e93; margin-top: 4px; font-weight: 400; display: block; line-height: 1.6; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Noto Sans TC", sans-serif !important; }
 
-.glass-btn { display: flex; justify-content: center; align-items: center; background: #fff; padding: 14px; border-radius: 18px; text-decoration: none; color: #1d1d1f; font-weight: 600; margin: 10px 0; border: 1px solid rgba(0,0,0,0.05); }
+/* 🌟 加入按鈕微動效 */
+.glass-btn { display: flex; justify-content: center; align-items: center; background: #fff; padding: 14px; border-radius: 18px; text-decoration: none; color: #1d1d1f; font-weight: 600; margin: 10px 0; border: 1px solid rgba(0,0,0,0.05); transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+.glass-btn:active { transform: scale(0.95); opacity: 0.9; }
 .glass-btn.taxi { background: #fffbef !important; border-color: #fce48b !important; color: #b08500 !important; }
 .glass-btn.home-btn { background: #f2f2f7 !important; border-color: #e5e5ea !important; color: #1d1d1f !important; margin-top: 20px; }
 
@@ -228,7 +267,7 @@ header h1 { margin: 0; font-size: 24px; }
 .dot { width: 8px; height: 8px; border-radius: 50%; }
 .dot-timmy { background: #5e5ce6; }
 .dot-jj { background: #ff2d55; }
-.settlement { font-size: 14px; padding: 10px; border-radius: 12px; font-weight: 600; }
+.settlement { font-size: 14px; padding: 10px; border-radius: 12px; font-weight: 600; transition: all 0.3s; }
 .settlement.owe-timmy { background: rgba(94, 92, 230, 0.1); color: #5e5ce6; }
 .settlement.owe-jj { background: rgba(255, 45, 85, 0.1); color: #ff2d55; }
 .settlement.balanced { background: rgba(52, 199, 89, 0.1); color: #34c759; }
@@ -245,11 +284,20 @@ header h1 { margin: 0; font-size: 24px; }
 
 .input-row { margin-bottom: 12px; }
 .input-row input { width: 100%; background: #f2f2f7; border: none; padding: 14px; border-radius: 12px; font-size: 15px; outline: none; font-weight: 500; font-family: inherit; }
-.add-btn { width: 100%; background: var(--ios-blue); color: #fff; border: none; padding: 14px; border-radius: 14px; font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-.add-btn:active { transform: scale(0.98); opacity: 0.9; }
+
+/* 🌟 加入記帳按鈕彈性微動效 */
+.add-btn { width: 100%; background: var(--ios-blue); color: #fff; border: none; padding: 14px; border-radius: 14px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.add-btn:active { transform: scale(0.94); opacity: 0.9; }
 
 .expense-list-container h3 { font-size: 15px; color: #86868b; margin-left: 10px; margin-bottom: 10px; }
-.exp-item { background: #fff; border-radius: 16px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+
+/* 🌟 記帳項目滑動進場動畫 */
+.exp-item { 
+    background: #fff; border-radius: 16px; padding: 15px; margin-bottom: 10px; 
+    display: flex; justify-content: space-between; align-items: center; 
+    box-shadow: 0 2px 10px rgba(0,0,0,0.02); 
+    opacity: 0; animation: slideInItem 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
 .exp-item-left { display: flex; align-items: center; gap: 12px; }
 .exp-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 16px; }
 .exp-avatar.color-timmy { background: rgba(94, 92, 230, 0.1); }
@@ -260,7 +308,7 @@ header h1 { margin: 0; font-size: 24px; }
 .exp-item-right { display: flex; align-items: center; gap: 15px; }
 .exp-price { font-size: 16px; font-weight: 700; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; }
 .exp-delete { background: #f2f2f7; width: 28px; height: 28px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 12px; cursor: pointer; transition: 0.2s; }
-.exp-delete:active { background: #ff3b30; color: #fff; }
+.exp-delete:active { background: #ff3b30; color: #fff; transform: scale(0.85); }
 
 .category-toggle { display: flex; gap: 8px; margin-bottom: 12px; }
 .category-toggle input { display: none; }
@@ -271,15 +319,14 @@ header h1 { margin: 0; font-size: 24px; }
 .category-toggle input:checked + label[for="cat-other"] { background: #8e8e93; color: #fff; box-shadow: 0 2px 8px rgba(142, 142, 147, 0.4); }
 
 .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 10px; }
-.list-header h3 { font-size: 15px; color: #86868b; margin: 0; }
-.summary-btn { background: #e5e5ea; border: none; padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; color: #1d1d1f; cursor: pointer; }
-.summary-btn:active { transform: scale(0.95); }
+.summary-btn { background: #e5e5ea; border: none; padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; color: #1d1d1f; cursor: pointer; transition: transform 0.2s; }
+.summary-btn:active { transform: scale(0.92); }
 #category-summary-view { background: #fff; border-radius: 16px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
 .cat-bar-container { display: flex; align-items: center; margin-bottom: 10px; font-size: 13px; font-weight: 600; color: #1d1d1f; }
 .cat-bar-container:last-child { margin-bottom: 0; }
 .cat-label { width: 45px; flex-shrink: 0; }
 .cat-track { flex: 1; height: 10px; background: #f2f2f7; border-radius: 5px; margin: 0 10px; overflow: hidden; }
-.cat-fill { height: 100%; border-radius: 5px; }
+.cat-fill { height: 100%; border-radius: 5px; transition: width 0.6s cubic-bezier(0.25, 0.8, 0.25, 1); }
 .cat-amount { width: 55px; text-align: right; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; }
 .exp-cat-tag { font-size: 10px; background: #f2f2f7; padding: 2px 6px; border-radius: 6px; margin-right: 6px; color: #8e8e93; }
 
@@ -289,8 +336,8 @@ header h1 { margin: 0; font-size: 24px; }
 .photo-diary-modal-content { background: #f2f2f7; }
 .photo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding-bottom: 15px; }
 
-.photo-card { width: 100%; height: 160px; background: #fff; border-radius: 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.06); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; cursor: pointer; padding: 8px; border: 1px solid rgba(0,0,0,0.02); }
-.photo-card:active { transform: scale(0.97); }
+.photo-card { width: 100%; height: 160px; background: #fff; border-radius: 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.06); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; cursor: pointer; padding: 8px; border: 1px solid rgba(0,0,0,0.02); transition: transform 0.2s; }
+.photo-card:active { transform: scale(0.96); }
 .photo-card-inner { width: 100%; height: 100%; background: #f2f2f7; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; position: relative; }
 .photo-card-inner.empty { border: 2px dashed #d1d1d6; background: transparent; }
 .photo-card-inner img { width: 100%; height: 100%; object-fit: cover; }
@@ -302,10 +349,10 @@ header h1 { margin: 0; font-size: 24px; }
 .photo-viewer-content { padding: 20px; display: flex; flex-direction: column; align-items: center; background: rgba(255, 255, 255, 0.96); border-radius: 25px; }
 #viewer-img { width: 100%; max-height: 45vh; object-fit: contain; border-radius: 12px; margin-bottom: 15px; background: #f2f2f7; }
 .delete-photo-btn { background: #ff3b30; color: #fff; border: none; padding: 12px 20px; border-radius: 14px; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; transition: 0.2s; }
-.delete-photo-btn:active { transform: scale(0.98); opacity: 0.9; }
+.delete-photo-btn:active { transform: scale(0.96); opacity: 0.9; }
 
 /* =========================================
-   💱 匯率與刷卡試算排版 (全新)
+   💱 匯率與刷卡試算排版
 ========================================= */
 .exchange-rate-card { background: #fff; border-radius: 20px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; }
 .ex-rate-left { display: flex; flex-direction: column; gap: 4px; }
@@ -316,9 +363,9 @@ header h1 { margin: 0; font-size: 24px; }
 
 .calc-section { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); border-radius: 20px; padding: 20px; margin-bottom: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; }
 .calc-label { font-size: 13px; color: #86868b; font-weight: 600; margin-bottom: 10px; }
-.calc-input-wrapper { display: flex; align-items: center; justify-content: center; border-bottom: 2px solid var(--ios-blue); padding-bottom: 5px; width: 80%; margin: 0 auto; }
+.calc-input-wrapper { display: flex; align-items: center; justify-content: center; border-bottom: 2px solid var(--ios-blue); padding-bottom: 5px; width: 80%; margin: 0 auto; transition: border-color 0.3s; }
 .calc-symbol { font-size: 28px; font-weight: 700; color: #1d1d1f; margin-right: 8px; }
-.calc-input-wrapper input { width: 100%; font-size: 36px; font-weight: 700; color: #1d1d1f; background: transparent; border: none; outline: none; text-align: left; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; padding: 0; }
+.calc-input-wrapper input { width: 100%; font-size: 36px; font-weight: 700; color: #1d1d1f; background: transparent; border: none; outline: none; text-align: left; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; padding: 0; transition: transform 0.2s; }
 .calc-input-wrapper input::placeholder { color: #d1d1d6; }
 
 .calc-results { display: flex; flex-direction: column; gap: 10px; }
