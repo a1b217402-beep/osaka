@@ -53,15 +53,13 @@ function checkReservationReminder() {
     const jstHour = jstNow.getHours();
     const jstMin = jstNow.getMinutes();
 
-    // 判斷是否為 Day 6 (2026/08/15)
     const isTargetDay = (jstYear === 2026 && jstMonth === 8 && jstDate === 15);
-    
     const banner = document.getElementById('reservation-alert-banner');
     const modalStatus = document.querySelector('#modalBody #kichikichi-status');
 
     const totalMins = jstHour * 60 + jstMin;
-    const startMins = 12 * 60 + 50; // 12:50 開始提醒
-    const actualEndMins = 14 * 60;  // 14:00 結束
+    const startMins = 12 * 60 + 50; 
+    const actualEndMins = 14 * 60;  
 
     if (isTargetDay && totalMins >= startMins && totalMins < actualEndMins) {
         if(banner) banner.style.display = 'block';
@@ -100,7 +98,7 @@ function updateFlightStatus() {
     }, 1200);
 }
 
-// 🌟 視窗開啟邏輯 (包含滾動條歸零)
+// 🌟 視窗開啟邏輯
 function openModal(dayId, event) {
     const modal = document.getElementById('itineraryModal');
     const modalBody = document.getElementById('modalBody');
@@ -118,7 +116,7 @@ function openModal(dayId, event) {
         setTimeout(() => {
             const modalContent = modal.querySelector('.modal-content');
             if (modalContent) modalContent.scrollTop = 0;
-            checkReservationReminder(); // 打開時同步檢查預約狀態
+            checkReservationReminder(); 
         }, 10);
 
         updateItineraryPreview();
@@ -260,30 +258,70 @@ function updateItineraryPreview() {
     }
 }
 
-let currentJpyToTwd = 0.2100; 
+// =========================================
+// 💱 匯率與真實刷卡試算 (升級版)
+// =========================================
+// 預設為較接近真實行情的 0.202 (若斷網時使用)
+let baseJpyToTwd = 0.2020; 
+let displayRate = 0.2020;
+
 async function fetchExchangeRate() {
+    const rateElement = document.getElementById('current-rate');
+    const timeElement = document.getElementById('rate-update-time');
+    
     try {
-        const response = await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/jpy.json');
+        // 使用更穩定的匯率 API
+        const response = await fetch('https://open.er-api.com/v6/latest/JPY');
         const data = await response.json();
-        if (data && data.jpy && data.jpy.twd) {
-            currentJpyToTwd = data.jpy.twd;
-            document.getElementById('current-rate').innerText = currentJpyToTwd.toFixed(4);
+        
+        if (data && data.rates && data.rates.TWD) {
+            // API 抓到的是純市場中價
+            const rawRate = data.rates.TWD;
+            
+            // 🌟 模擬銀行牌告溢價 (約加上 0.5% 作為發卡行的結匯基準)
+            baseJpyToTwd = rawRate * 1.005; 
+            
+            // 為了版面美觀，四捨五入到小數點後四位
+            displayRate = parseFloat(baseJpyToTwd.toFixed(4));
+            
+            rateElement.innerText = displayRate;
+            
             const now = new Date();
-            document.getElementById('rate-update-time').innerText = `最後更新: ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            timeElement.innerText = `最後更新: ${hours}:${minutes} (含估算溢價)`;
+            
             calculateExchange();
         }
-    } catch (e) { document.getElementById('current-rate').innerText = currentJpyToTwd.toFixed(4) + " (離線)"; }
+    } catch (error) {
+        console.error("無法抓取即時匯率，使用預設值", error);
+        rateElement.innerText = displayRate.toFixed(4) + " (離線預估)";
+        timeElement.innerText = "最後更新: 離線模式";
+        calculateExchange();
+    }
 }
 
 function calculateExchange() {
-    const val = parseFloat(document.getElementById('jpy-input').value) || 0;
-    document.getElementById('twd-cash').innerText = `NT$ ${Math.round(val * currentJpyToTwd).toLocaleString()}`;
-    document.getElementById('twd-visa').innerText = `NT$ ${Math.round(val * currentJpyToTwd * 1.015).toLocaleString()}`;
-    document.getElementById('twd-master').innerText = `NT$ ${Math.round(val * currentJpyToTwd * 1.0145).toLocaleString()}`;
+    const jpyInput = document.getElementById('jpy-input').value;
+    const jpyAmount = parseFloat(jpyInput) || 0;
+    
+    // 💵 基礎現金匯率換算 (以包含溢價的 baseJpyToTwd 計算)
+    const twdCash = jpyAmount * baseJpyToTwd;
+    
+    // 💳 Visa 預估：加上 1.5% 海外手續費
+    const twdVisa = twdCash * 1.015; 
+    
+    // 💳 Mastercard 預估：通常結匯率比 Visa 便宜一點點 (我們假設省 0.15%)
+    // 等同於 (基礎匯率 * 0.9985) * 1.015
+    const twdMaster = (twdCash * 0.9985) * 1.015; 
+
+    document.getElementById('twd-cash').innerText = `NT$ ${Math.round(twdCash).toLocaleString()}`;
+    document.getElementById('twd-visa').innerText = `NT$ ${Math.round(twdVisa).toLocaleString()}`;
+    document.getElementById('twd-master').innerText = `NT$ ${Math.round(twdMaster).toLocaleString()}`;
 }
 
 // =========================================
-// 🚀 初始化與手勢監聽 (完整修復區)
+// 🚀 初始化與手勢監聽
 // =========================================
 function init() {
     const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -319,6 +357,8 @@ function init() {
     renderExpenses(expenses.length === 0);
     updateItineraryPreview();
     setInterval(updateItineraryPreview, 30000); 
+    
+    // 啟動更準確的匯率抓取
     fetchExchangeRate();
 
     checkReservationReminder();
@@ -326,7 +366,6 @@ function init() {
 
     setTimeout(() => switchTab('home'), 100);
 
-    // 🌟 1. 記帳付款人 Toggle 滑動回彈手勢
     const toggleArea = document.querySelector('.payer-toggle');
     const slider = document.querySelector('.toggle-slider');
     if (toggleArea && slider) {
@@ -354,7 +393,6 @@ function init() {
         });
     }
 
-    // 🌟 2. 底部導覽列 Tab Indicator 拖曳滑動手勢
     const tabBar = document.querySelector('.bottom-tab-bar');
     const tabIndicator = document.getElementById('tab-indicator');
     const tabBtns = document.querySelectorAll('.tab-btn');
@@ -395,10 +433,8 @@ function init() {
         });
     }
 
-    // 🌟 3. 點擊空白處關閉 Modal 視窗功能
     document.querySelectorAll('.modal').forEach(modal => {
         modal.addEventListener('click', function(event) {
-            // 確認點擊的是深色背景 (.modal) 而不是白色內容區 (.modal-content)
             if (event.target === this) {
                 if (this.id === 'itineraryModal') closeModal();
                 else if (this.id === 'expenseModal') closeExpenseModal();
