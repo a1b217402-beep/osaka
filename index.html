@@ -21,6 +21,17 @@
         <p class="subtitle">8/10~8/17 | 8天7夜</p>
     </header>
 
+    <div id="reservation-alert-banner" class="res-alert-banner" style="display: none;">
+        <div class="res-alert-content" onclick="window.open('https://kichikichi.com/kichikichi-reservation/', '_blank')">
+            <span class="res-alert-icon">🍳</span>
+            <div class="res-alert-text">
+                <span class="res-alert-title">預約提醒：Kichi Kichi Omurice</span>
+                <span class="res-alert-sub">預約窗格已開啟，點此立即預約！</span>
+            </div>
+            <span class="res-alert-arrow">→</span>
+        </div>
+    </div>
+
     <main>
         <div id="view-home" class="tab-view active">
             <nav>
@@ -484,6 +495,18 @@
         <div id="content-day6">
             <div class="ios-modal-header"><h2>Day 6 | 準備開車開超久</h2></div>
             <div class="itinerary-card">
+                <div class="reservation-tracker-card" onclick="window.open('https://kichikichi.com/kichikichi-reservation/', '_blank')">
+                    <div class="res-tracker-header">
+                        <span class="res-tag">預約提醒</span>
+                        <span class="res-status-text" id="kichikichi-status">預約未開啟</span>
+                    </div>
+                    <div class="res-tracker-main">
+                        <span class="res-name">Kichi Kichi Omurice 🍳</span>
+                        <span class="res-detail">預約時間：日本 13:00 - 14:00</span>
+                    </div>
+                    <div class="res-btn-mini">立即前往預約連結 →</div>
+                </div>
+
                 <div class="time-item type-sight" data-time="08:30">
                     <span class="time">08:30</span>
                     <div class="item-content">
