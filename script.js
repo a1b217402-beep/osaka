@@ -79,10 +79,11 @@ function checkReservationReminder() {
 }
 
 // =========================================
-// ✈️ 航班即時動態追蹤
+// ✈️ 航班即時動態追蹤 (已修復 Day 8 問題並加入自動巡航)
 // =========================================
 function updateFlightStatus() {
-    const badge = document.querySelector('#modalBody #flight-status-badge');
+    // 🌟 修復：改用 class 選取器，避免 Day 1 與 Day 8 共用相同 ID 造成的抓取錯誤
+    const badge = document.querySelector('#modalBody .flight-tracker-card .flight-status');
     if(!badge) return;
     
     badge.innerText = "🔄 同步中...";
@@ -90,11 +91,15 @@ function updateFlightStatus() {
     
     setTimeout(() => {
         const isOnTime = Math.random() > 0.15; 
+        
+        // 🌟 新增：自動判斷天數，切換不同的抵達地名稱
+        const dest = currentOpenDayNum === 8 ? "TPE T1" : "KIX T1";
+
         if (isOnTime) {
-            badge.innerText = "✅ 準點 (抵達 T1)";
+            badge.innerText = `✅ 準點 (抵達 ${dest})`;
             badge.className = "flight-status on-time";
         } else {
-            badge.innerText = "⚠️ 延遲 15 分 (抵達 T1)";
+            badge.innerText = `⚠️ 延遲 15 分 (抵達 ${dest})`;
             badge.className = "flight-status delayed";
         }
     }, 1200);
@@ -436,6 +441,9 @@ function init() {
 
     checkReservationReminder();
     setInterval(checkReservationReminder, 30000); 
+    
+    // 🌟 新增：每 60 秒背景自動檢查並更新航班動態，完全不需要手動按！
+    setInterval(updateFlightStatus, 60000); 
 
     setTimeout(() => switchTab('home'), 100);
 
