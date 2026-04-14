@@ -78,23 +78,22 @@ h1, h2, h3, h4, h5, h6, .serif {
 }
 
 /* =========================================
-   3. 吸頂標題與導覽 (Scroll Spy & Glassmorphism)
+   3. 吸頂標題與導覽 (統一色調與無縫接合)
 ========================================= */
 header { 
     position: sticky;
     top: 0;
     z-index: 1000;
-    background: rgba(255, 255, 255, 0.4); 
+    background: rgba(255, 255, 255, 0.65); /* 統一成同樣的微透亮色 */
     backdrop-filter: blur(20px); 
     -webkit-backdrop-filter: blur(20px);
     padding-top: max(20px, env(safe-area-inset-top)); 
-    padding-bottom: 12px; 
+    padding-bottom: 5px; /* 縮小間距，消弭斷層 */
     text-align: center; 
-    transition: background 0.3s, box-shadow 0.3s;
+    transition: background 0.3s;
 }
 header.scrolled {
-    background: rgba(255, 255, 255, 0.75);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    background: rgba(255, 255, 255, 0.85);
 }
 header h1 { margin: 0; font-size: 24px; }
 .subtitle { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif !important; font-size: 13px; color: #424245; font-weight: 600; margin-top: 5px; }
@@ -105,15 +104,16 @@ header h1 { margin: 0; font-size: 24px; }
 .sticky-nav-wrapper {
     position: sticky;
     z-index: 990;
-    background: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.65); /* 與 Header 統一色調 */
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     transition: background 0.3s, box-shadow 0.3s;
-    padding: 10px 0;
-    margin: -10px 0 15px 0;
+    padding: 5px 0 10px 0;
+    margin: 0 0 15px 0; /* 移除原本會導致空隙的負 margin */
+    border-bottom: 1px solid rgba(0,0,0,0.05);
 }
 .sticky-nav-wrapper.scrolled {
-    background: rgba(255, 255, 255, 0.75);
+    background: rgba(255, 255, 255, 0.85);
     box-shadow: 0 4px 20px rgba(0,0,0,0.06);
 }
 .nav-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 0 auto !important; }
@@ -432,10 +432,10 @@ header h1 { margin: 0; font-size: 24px; }
     background-size: 200% 200%; 
 }
 [data-theme="dark"] .theme-toggle { background: rgba(28,28,30,0.8); color: #fff; }
-[data-theme="dark"] header { background: rgba(0, 0, 0, 0.4); }
-[data-theme="dark"] header.scrolled { background: rgba(28, 28, 30, 0.85); box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-[data-theme="dark"] .sticky-nav-wrapper { background: rgba(28, 28, 30, 0.4); }
-[data-theme="dark"] .sticky-nav-wrapper.scrolled { background: rgba(28, 28, 30, 0.85); box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+[data-theme="dark"] header { background: rgba(28, 28, 30, 0.65); }
+[data-theme="dark"] header.scrolled { background: rgba(28, 28, 30, 0.9); box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+[data-theme="dark"] .sticky-nav-wrapper { background: rgba(28, 28, 30, 0.65); border-bottom-color: rgba(255,255,255,0.05); }
+[data-theme="dark"] .sticky-nav-wrapper.scrolled { background: rgba(28, 28, 30, 0.9); box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
 [data-theme="dark"] .subtitle { color: #a1a1a6; }
 [data-theme="dark"] .nav-btn { background: rgba(28, 28, 30, 0.85); border-color: rgba(255,255,255,0.1); color: #f5f5f7; }
 [data-theme="dark"] .weather-widget, [data-theme="dark"] .preview-card-content, [data-theme="dark"] .trigger-card { background: rgba(28, 28, 30, 0.85); border-color: rgba(255,255,255,0.1); }
