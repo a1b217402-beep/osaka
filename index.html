@@ -662,7 +662,70 @@
 
         <div id="content-day8">
             <div class="ios-modal-header"><h2>Day 8 | 回去上班</h2></div>
-            <p style="padding: 20px; color: #86868b;">行程規劃中...</p>
+            <div class="itinerary-card">
+                <div class="time-item type-sight" data-time="09:00">
+                    <span class="time">09:00</span>
+                    <div class="item-content">
+                        <span class="item-title">辦理退房與啟程</span>
+                        <span class="transit-detail">🏨 揮別京都，帶著滿滿戰利品準備前往機場方向</span>
+                    </div>
+                </div>
+                <div class="time-item type-sight" data-time="10:30">
+                    <span class="time">10:30</span>
+                    <div class="item-content">
+                        <span class="item-title">臨空城 Premium Outlets</span>
+                        <span class="transit-detail">🛍️ 把握最後機會，在離機場最近的 Outlet 血拼</span>
+                    </div>
+                </div>
+                <div class="time-item type-food" data-time="12:30">
+                    <span class="time">12:30</span>
+                    <div class="item-content">
+                        <span class="item-title">午餐：臨空城或機場周邊</span>
+                        <span class="transit-detail">🍜 吃最後一碗道地的日本拉麵或定食</span>
+                    </div>
+                </div>
+                <div class="time-item type-sight" data-time="16:30">
+                    <span class="time">16:30</span>
+                    <div class="item-content">
+                        <span class="item-title">抵達關西機場 (KIX)</span>
+                        <span class="transit-detail">🛄 辦理報到、托運行李，準備大採購免稅伴手禮</span>
+                    </div>
+                </div>
+                <div class="time-item type-sight" data-time="19:05">
+                    <span class="time">19:05</span>
+                    <div class="item-content">
+                        <span class="item-title">搭機返回台灣</span>
+                        <span class="transit-detail">✈️ 結束完美的關西之旅</span>
+                        
+                        <div class="flight-tracker-card" onclick="updateFlightStatus()">
+                            <div class="flight-header">
+                                <span class="flight-no">✈️ 中華航空 CI0173</span>
+                                <span class="flight-status" id="flight-status-badge">🔄 點擊查動態</span>
+                            </div>
+                            <div class="flight-route">
+                                <div class="route-point">
+                                    <span class="r-code">KIX</span>
+                                    <span class="r-time">19:05</span>
+                                    <span class="r-term">T1</span>
+                                </div>
+                                <div class="route-line">
+                                    <span class="plane-icon">✈</span>
+                                </div>
+                                <div class="route-point">
+                                    <span class="r-code">TPE</span>
+                                    <span class="r-time">21:05</span>
+                                    <span class="r-term">T1</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="transport-section">
+                <a href="https://www.google.com/maps/dir/?api=1&destination=艾思利德酒店難波東4" class="glass-btn">🛍️ 導航至 臨空城 Outlets</a>
+                <a href="https://www.google.com/maps/dir/?api=1&destination=艾思利德酒店難波東5" class="glass-btn taxi">✈️ 導航至 關西機場 (KIX)</a>
+            </div>
         </div>
 
     </div>
