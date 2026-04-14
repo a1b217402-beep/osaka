@@ -1,5 +1,5 @@
 let currentActiveButton = null;
-let currentOpenDayNum = 1; // 記錄目前打開的行程天數
+let currentOpenDayNum = 1; 
 
 // =========================================
 // 🌙 深色模式邏輯
@@ -117,34 +117,29 @@ function slideModalDay(direction) {
     const modalBody = document.getElementById('modalBody');
     const sourceContent = document.getElementById('content-day' + newDayNum);
 
-    // 1. 往左右淡出
     modalBody.style.transform = `translateX(${direction * -30}px)`;
     modalBody.style.opacity = '0';
 
     setTimeout(() => {
-        // 2. 瞬間替換內容與更新按鈕狀態
         currentOpenDayNum = newDayNum;
         modalBody.innerHTML = sourceContent.innerHTML;
         updateModalNav();
         
-        // 3. 準備從反方向滑入
         modalBody.style.transition = 'none';
         modalBody.style.transform = `translateX(${direction * 30}px)`;
-        void modalBody.offsetWidth; // 強制重繪
+        void modalBody.offsetWidth; 
 
-        // 4. 正式滑入淡入
         modalBody.style.transition = 'transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.25s ease';
         modalBody.style.transform = 'translateX(0)';
         modalBody.style.opacity = '1';
 
-        // 滾動條歸零修復：確保切換天數時回到最上方
         const modalContent = document.querySelector('.modal-content');
         if (modalContent) modalContent.scrollTop = 0;
 
         updateItineraryPreview();
         checkReservationReminder(); 
-        if(newDayNum === 1) setTimeout(updateFlightStatus, 600);
-    }, 200); // 200ms 對應 fade out 的轉場時間
+        if(newDayNum === 1 || newDayNum === 8) setTimeout(updateFlightStatus, 600);
+    }, 200); 
 }
 
 function openModal(dayId, event) {
@@ -156,7 +151,6 @@ function openModal(dayId, event) {
     if (modal && sourceContent && event) {
         currentActiveButton = event.currentTarget;
         
-        // 重置動畫狀態
         modalBody.style.transition = 'none';
         modalBody.style.transform = 'translateX(0)';
         modalBody.style.opacity = '1';
@@ -169,7 +163,6 @@ function openModal(dayId, event) {
         modal.classList.add('open');
         document.body.style.overflow = 'hidden';
 
-        // 修復痛點：每次打開視窗時，延時強制將滾動條回到最頂部
         setTimeout(() => {
             const modalContent = modal.querySelector('.modal-content');
             if (modalContent) modalContent.scrollTop = 0;
@@ -177,7 +170,7 @@ function openModal(dayId, event) {
         }, 10);
 
         updateItineraryPreview();
-        if(dayId === 'day1') setTimeout(updateFlightStatus, 600);
+        if(dayId === 'day1' || dayId === 'day8') setTimeout(updateFlightStatus, 600);
     }
 }
 
@@ -220,7 +213,6 @@ async function fetchWeather(lat, lon, cityName) {
     const titleDesc = document.getElementById('current-weather-desc');
     const locationName = document.getElementById('location-name');
     
-    // 確保一開始顯示骨架
     if(skeleton) skeleton.style.display = 'block';
     if(content) content.style.display = 'none';
 
@@ -229,7 +221,6 @@ async function fetchWeather(lat, lon, cityName) {
         const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,weathercode,precipitation_probability&timezone=auto&forecast_days=2`);
         const data = await res.json();
         
-        // 加入些微延遲，讓骨架動效稍微閃爍展示專業感
         setTimeout(() => {
             titleDesc.innerHTML = `${getWeatherEmoji(data.current_weather.weathercode)} ${Math.round(data.current_weather.temperature)}°C`;
             const nowHour = new Date().getHours();
@@ -245,7 +236,6 @@ async function fetchWeather(lat, lon, cityName) {
             }
             hourlyContainer.innerHTML = html;
             
-            // 隱藏骨架，顯示真實內容
             if(skeleton) skeleton.style.display = 'none';
             if(content) content.style.display = 'block';
         }, 500);
@@ -360,7 +350,7 @@ function updateItineraryPreview() {
     }
 }
 
-// 💱 匯率與真實刷卡試算 (升級版)
+// 💱 匯率與真實刷卡試算 
 let baseJpyToTwd = 0.2020; 
 let displayRate = 0.2020;
 
@@ -459,7 +449,7 @@ function init() {
             if(header) header.classList.add('scrolled');
             if(dayNav) {
                 dayNav.classList.add('scrolled');
-                dayNav.style.top = (header.offsetHeight - 1) + 'px'; // 緊貼 Header
+                dayNav.style.top = (header.offsetHeight - 1) + 'px'; 
             }
         } else {
             if(header) header.classList.remove('scrolled');
@@ -727,7 +717,6 @@ function renderCategorySummary() {
 function renderExpenses(isLoading = false) {
     const listContainer = document.getElementById('expense-list'); if (!listContainer) return; listContainer.innerHTML = '';
     
-    // 記帳本骨架螢幕 (載入中動畫)
     if (isLoading) { 
         listContainer.innerHTML = `
             <div class="skeleton-item">
